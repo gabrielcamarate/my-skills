@@ -1,0 +1,4 @@
+interface:
+  display_name: "gabriel-release-smoke-test"
+  short_description: "Validar o artefato real de uma release"
+  default_prompt: "Use $gabriel-release-smoke-test no escopo indicado, seguindo as instruções do projeto."

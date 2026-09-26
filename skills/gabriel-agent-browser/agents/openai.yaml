@@ -1,0 +1,4 @@
+interface:
+  display_name: "gabriel-agent-browser"
+  short_description: "Operar e verificar interfaces no navegador"
+  default_prompt: "Use $gabriel-agent-browser no escopo indicado, seguindo as instruções do projeto."

@@ -1,4 +1,4 @@
 interface:
-  display_name: "Melhoria do workflow com evidência"
-  short_description: "Melhorar procedimentos a partir de atrito real"
-  default_prompt: "Use $gabriel-reflect no escopo desta tarefa e siga as instruções do projeto."
+  display_name: "gabriel-reflect"
+  short_description: "Melhorar o workflow a partir de atrito real"
+  default_prompt: "Use $gabriel-reflect no escopo indicado, seguindo as instruções do projeto."

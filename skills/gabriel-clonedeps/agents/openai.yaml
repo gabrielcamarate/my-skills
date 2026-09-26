@@ -1,0 +1,4 @@
+interface:
+  display_name: "gabriel-clonedeps"
+  short_description: "Consultar fontes da dependência na versão certa"
+  default_prompt: "Use $gabriel-clonedeps no escopo indicado, seguindo as instruções do projeto."

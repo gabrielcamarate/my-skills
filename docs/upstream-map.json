@@ -1,0 +1,168 @@
+{
+  "checked_at": "2026-09-26",
+  "upstream_commit": "285ca8275a3c61ee856deb7a55db21de3f62526d",
+  "mode": "independent-adaptation",
+  "skills": [
+    {
+      "upstream": "agent-browser",
+      "local": "gabriel-agent-browser",
+      "source": "https://github.com/akitaonrails/my-skills/blob/285ca8275a3c61ee856deb7a55db21de3f62526d/agent-browser/SKILL.md",
+      "source_sha256": "3a7520e64de2dfaa516b6721c001e84e06e3c06a187b82af029ae721540ebfac",
+      "adaptation": "Aproveita CUA/plugin/CLI existente; não obriga instalação do stack de browser do Akita."
+    },
+    {
+      "upstream": "blog-cost-charts",
+      "local": "gabriel-blog-cost-charts",
+      "source": "https://github.com/akitaonrails/my-skills/blob/285ca8275a3c61ee856deb7a55db21de3f62526d/blog-cost-charts/SKILL.md",
+      "source_sha256": "bc17a375b9cd52b2ac7bb2efd35d5cedd19873003c08f53fcb4450c9eeef4dc3",
+      "adaptation": "Transfere visualização para benchmarks Gabriel OS; remove S3/Hugo e não inventa custos de assinatura."
+    },
+    {
+      "upstream": "clonedeps",
+      "local": "gabriel-clonedeps",
+      "source": "https://github.com/akitaonrails/my-skills/blob/285ca8275a3c61ee856deb7a55db21de3f62526d/clonedeps/SKILL.md",
+      "source_sha256": "0d321d05f09c29bede83b468339959196682cd0c158594a91e47abc15aae62b7",
+      "adaptation": "Mantém clone planejado/versionado; elimina exigência de librarian e pasta OpenCode fixa."
+    },
+    {
+      "upstream": "codemap",
+      "local": "gabriel-codemap",
+      "source": "https://github.com/akitaonrails/my-skills/blob/285ca8275a3c61ee856deb7a55db21de3f62526d/codemap/SKILL.md",
+      "source_sha256": "9bb083daa47b7333f28719fea3a76ee9c20962854d36f60b1a1cdab048767876",
+      "adaptation": "Mantém atlas e atualização incremental; usa documentação existente em vez de .slim/codemap obrigatório."
+    },
+    {
+      "upstream": "deepwork",
+      "local": "gabriel-deepwork",
+      "source": "https://github.com/akitaonrails/my-skills/blob/285ca8275a3c61ee856deb7a55db21de3f62526d/deepwork/SKILL.md",
+      "source_sha256": "fb1a5be03d0f255ddd3bf872aad27e1b0ea78ac896ec8d0210734632c5aafd56",
+      "adaptation": "Traduz scheduler/oracle para capacidades reais; preserva limites de revisão e continuidade, sem criar tarefas automaticamente."
+    },
+    {
+      "upstream": "effect",
+      "local": "gabriel-effect",
+      "source": "https://github.com/akitaonrails/my-skills/blob/285ca8275a3c61ee856deb7a55db21de3f62526d/effect/SKILL.md",
+      "source_sha256": "0d27f8d40455cd4d509c0c81f3d2b6edb8319cd8ebd12a2e9f21626fc80495d5",
+      "adaptation": "Mantém objetivo tecnológico, mas remove pressuposto v4 e caminhos específicos de outro repo."
+    },
+    {
+      "upstream": "fact-check",
+      "local": "gabriel-fact-check",
+      "source": "https://github.com/akitaonrails/my-skills/blob/285ca8275a3c61ee856deb7a55db21de3f62526d/fact-check/SKILL.md",
+      "source_sha256": "9fe863064703d4ef5a56fb6ca3489969a4b2edb2451b323c8545f95090467efb",
+      "adaptation": "Mantém ledger, crítica lógica e segunda passagem; remove dependência de Grok/Claude pagos e declara independência real."
+    },
+    {
+      "upstream": "github-resolution",
+      "local": "gabriel-github-resolution",
+      "source": "https://github.com/akitaonrails/my-skills/blob/285ca8275a3c61ee856deb7a55db21de3f62526d/github-resolution/SKILL.md",
+      "source_sha256": "9f24688c3b3b10346dc812f5c6edb4cde08a4899b5fde23bf1dc6f53988acd7c",
+      "adaptation": "Preserva sequência, teste e gate >3; adapta fechamento ao critério real e às autorizações locais."
+    },
+    {
+      "upstream": "humanizer",
+      "local": "gabriel-humanizer",
+      "source": "https://github.com/akitaonrails/my-skills/blob/285ca8275a3c61ee856deb7a55db21de3f62526d/humanizer/SKILL.md",
+      "source_sha256": "e8269e236bed06ed0fe4824c274112e54950b0cb46b0bafe5e1576ef7c9f93d5",
+      "adaptation": "Preserva revisão de 25 padrões como referência; usa a voz de Gabriel e protege conteúdo factual."
+    },
+    {
+      "upstream": "improve-codebase-architecture",
+      "local": "gabriel-improve-codebase-architecture",
+      "source": "https://github.com/akitaonrails/my-skills/blob/285ca8275a3c61ee856deb7a55db21de3f62526d/improve-codebase-architecture/SKILL.md",
+      "source_sha256": "9e9b617b1c70d390e37dbfd1c031c11b3de850e2e3d01c4a2c2888bdb386a247",
+      "adaptation": "Preserva deep modules e discussão de alternativas; evita reabrir decisões e escrever memória automaticamente."
+    },
+    {
+      "upstream": "iss-audit",
+      "local": "gabriel-iss-audit",
+      "source": "https://github.com/akitaonrails/my-skills/blob/285ca8275a3c61ee856deb7a55db21de3f62526d/iss-audit/SKILL.md",
+      "source_sha256": "3f17318f03e8ee6330fc9251f6e30c28c603e18ec6ce5391c946d4618ed0fba0",
+      "adaptation": "Mantém investigação e decisão; preserva aceite operacional e não publica respostas automaticamente."
+    },
+    {
+      "upstream": "loop-engineering",
+      "local": "gabriel-loop-engineering",
+      "source": "https://github.com/akitaonrails/my-skills/blob/285ca8275a3c61ee856deb7a55db21de3f62526d/loop-engineering/SKILL.md",
+      "source_sha256": "551b298be29aa9603d0572ebb0b4ffcf6c873c692a49ba1106b373ab806192b6",
+      "adaptation": "Preserva grill/monitor e limite; implementa o procedimento com ferramentas disponíveis, sem callbacks OpenCode fictícios."
+    },
+    {
+      "upstream": "post-refactor",
+      "local": "gabriel-post-refactor",
+      "source": "https://github.com/akitaonrails/my-skills/blob/285ca8275a3c61ee856deb7a55db21de3f62526d/post-refactor/SKILL.md",
+      "source_sha256": "9611268b223e02e2ff40324d8ac16f50114b4a1cb2d2660111219b5c8ab691c4",
+      "adaptation": "Preserva revisão do refactor como objetivo distinto de simplificação e auditoria de lote."
+    },
+    {
+      "upstream": "pr-audit",
+      "local": "gabriel-pr-audit",
+      "source": "https://github.com/akitaonrails/my-skills/blob/285ca8275a3c61ee856deb7a55db21de3f62526d/pr-audit/SKILL.md",
+      "source_sha256": "ff78fa16ad14c63798bddafa6aab257c107eea25e32d3c8da0125e4521a3a8ac",
+      "adaptation": "Mantém auditoria completa e trust gate; integração fica na execução autorizada, sem concessão implícita."
+    },
+    {
+      "upstream": "pr-bump",
+      "local": "gabriel-pr-bump",
+      "source": "https://github.com/akitaonrails/my-skills/blob/285ca8275a3c61ee856deb7a55db21de3f62526d/pr-bump/SKILL.md",
+      "source_sha256": "8881b456aa7ff2e57aff6ebc997298a90f0eccc9ad6a9911ef8152345718f75f",
+      "adaptation": "Remove pressupostos Rails; detecta stack e preserva aprovação de publicação/fechamento."
+    },
+    {
+      "upstream": "pr-post-audit",
+      "local": "gabriel-pr-post-audit",
+      "source": "https://github.com/akitaonrails/my-skills/blob/285ca8275a3c61ee856deb7a55db21de3f62526d/pr-post-audit/SKILL.md",
+      "source_sha256": "775699521a8d8705b63b9894436c8370ac3fa99bbf575d7cc981975c92c6841a",
+      "adaptation": "Preserva intervalo composto e gate; não transforma revisão de lote em autorização de release."
+    },
+    {
+      "upstream": "reflect",
+      "local": "gabriel-reflect",
+      "source": "https://github.com/akitaonrails/my-skills/blob/285ca8275a3c61ee856deb7a55db21de3f62526d/reflect/SKILL.md",
+      "source_sha256": "f29f1378df375206f7bb0045cca4bcdf63646ddc96519aad36e35ed26c140d01",
+      "adaptation": "Preserva kaizen e menor ativo útil; respeita autorização existente e não escreve memória automaticamente."
+    },
+    {
+      "upstream": "release",
+      "local": "gabriel-release",
+      "source": "https://github.com/akitaonrails/my-skills/blob/285ca8275a3c61ee856deb7a55db21de3f62526d/release/SKILL.md",
+      "source_sha256": "b358a583b91d74f8d9de2013e9051844827d63c8eb9f25a0b4412109d84ca00a",
+      "adaptation": "Generaliza versões e plataformas; mantém autorização explícita e aceite de produção separado."
+    },
+    {
+      "upstream": "release-smoke-test",
+      "local": "gabriel-release-smoke-test",
+      "source": "https://github.com/akitaonrails/my-skills/blob/285ca8275a3c61ee856deb7a55db21de3f62526d/release-smoke-test/SKILL.md",
+      "source_sha256": "3e6b3f1e03dec14736a9d222b96954a2804dc3a0223dffd75d831e120b956711",
+      "adaptation": "Substitui pacote OpenCode específico por artefatos reais dos nossos produtos."
+    },
+    {
+      "upstream": "security-audit",
+      "local": "gabriel-security-audit",
+      "source": "https://github.com/akitaonrails/my-skills/blob/285ca8275a3c61ee856deb7a55db21de3f62526d/security-audit/SKILL.md",
+      "source_sha256": "d33fe33431fcb0ae13be0fb1658b5c25f1351679cec6a686fb0d8ae9efaf91ee",
+      "adaptation": "Aproveita o plugin instalado sem duplicar execução; preserva threat model, refutação e prova sintética."
+    },
+    {
+      "upstream": "simplify",
+      "local": "gabriel-simplify",
+      "source": "https://github.com/akitaonrails/my-skills/blob/285ca8275a3c61ee856deb7a55db21de3f62526d/simplify/SKILL.md",
+      "source_sha256": "eec9b693d11d20cf86334471a6b46bcf7bed324e52eb711ef256d3e0a90b4111",
+      "adaptation": "Mantém equivalência comportamental e escopo; não impõe TypeScript a todos os projetos."
+    },
+    {
+      "upstream": "verification-planning",
+      "local": "gabriel-verification-planning",
+      "source": "https://github.com/akitaonrails/my-skills/blob/285ca8275a3c61ee856deb7a55db21de3f62526d/verification-planning/SKILL.md",
+      "source_sha256": "7d2f4db38901c82a2884284805ebe4105b813933ba5cdca572acfed5b92e83c5",
+      "adaptation": "Mantém evidence path; inclui fixtures reutilizáveis, orçamento operacional e medição já existente."
+    },
+    {
+      "upstream": "worktrees",
+      "local": "gabriel-worktrees",
+      "source": "https://github.com/akitaonrails/my-skills/blob/285ca8275a3c61ee856deb7a55db21de3f62526d/worktrees/SKILL.md",
+      "source_sha256": "09c9b694ff3450e96d078ff687f25dae6238202972fdc62a6769605531bc22f6",
+      "adaptation": "Substitui .slim/omos por worktrees do runtime/codex e respeita cleanup Xlondz já autorizado."
+    }
+  ]
+}

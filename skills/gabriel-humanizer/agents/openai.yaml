@@ -1,0 +1,4 @@
+interface:
+  display_name: "gabriel-humanizer"
+  short_description: "Editar linguagem sem inventar fatos ou voz"
+  default_prompt: "Use $gabriel-humanizer no escopo indicado, seguindo as instruções do projeto."

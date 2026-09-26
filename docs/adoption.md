@@ -1,12 +1,12 @@
 # Adoção e ferramentas
 
-Preparação local em 25/09/2026. Xlondz é o primeiro candidato à aplicação porque Gabriel
+Bootstrap em 25/09/2026; reorganização em 26/09/2026. Xlondz é o primeiro candidato à aplicação porque Gabriel
 prioriza concluir o produto e receber clientes. Rakmma mantém sua rota própria.
 Low Ticket foi retirado do escopo pelo usuário.
 
 ## Base preparada
 
-- Fonte única de seis procedimentos portáveis.
+- Fonte única de 23 procedimentos, com mapa de correspondência ao catálogo do Akita.
 - Instalação pessoal por links, com prévia, diagnóstico e desinstalação limitada.
 - Regras dos projetos prevalecem; nenhuma migração dos seus arquivos nesta etapa.
 - Skills de plugins e sistema não são copiadas nem substituídas.
@@ -49,5 +49,4 @@ lançado nele, não automaticamente cada conector externo do desktop.
 4. Uma tarefa piloto demonstra cumprimento dos gates e entrega evidência útil.
 5. Tarefas comparáveis permitem medir melhoria; setup não é benchmark de produtividade.
 
-Os itens 3 a 5 precisam de evidência própria; não são satisfeitos apenas por arquivos
-válidos e links corretos.
+As seis skills iniciais apareceram no catálogo do Codex nesta sessão, evidência de descoberta do bootstrap. A descoberta das 23 novas em nova sessão e a descoberta no Claude ainda precisam de verificação. Os itens 4 e 5 também permanecem pendentes; arquivos e links não demonstram comportamento.

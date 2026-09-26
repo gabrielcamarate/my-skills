@@ -1,0 +1,4 @@
+interface:
+  display_name: "gabriel-iss-audit"
+  short_description: "Investigar issues e decidir a correção"
+  default_prompt: "Use $gabriel-iss-audit no escopo indicado, seguindo as instruções do projeto."

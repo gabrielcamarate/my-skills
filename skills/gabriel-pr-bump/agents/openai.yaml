@@ -1,0 +1,4 @@
+interface:
+  display_name: "gabriel-pr-bump"
+  short_description: "Atualizar dependências em lotes coerentes"
+  default_prompt: "Use $gabriel-pr-bump no escopo indicado, seguindo as instruções do projeto."

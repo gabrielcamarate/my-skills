@@ -1,0 +1,4 @@
+interface:
+  display_name: "gabriel-pr-audit"
+  short_description: "Auditar PRs com evidência do candidato"
+  default_prompt: "Use $gabriel-pr-audit no escopo indicado, seguindo as instruções do projeto."

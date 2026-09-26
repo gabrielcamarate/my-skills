@@ -1,0 +1,4 @@
+interface:
+  display_name: "gabriel-improve-codebase-architecture"
+  short_description: "Melhorar fronteiras e contratos de módulos"
+  default_prompt: "Use $gabriel-improve-codebase-architecture no escopo indicado, seguindo as instruções do projeto."

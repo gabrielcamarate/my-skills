@@ -1,0 +1,4 @@
+interface:
+  display_name: "gabriel-blog-cost-charts"
+  short_description: "Comparar qualidade, custo e tempo medidos"
+  default_prompt: "Use $gabriel-blog-cost-charts no escopo indicado, seguindo as instruções do projeto."

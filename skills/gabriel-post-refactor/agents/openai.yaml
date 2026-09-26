@@ -1,0 +1,4 @@
+interface:
+  display_name: "gabriel-post-refactor"
+  short_description: "Revisar consequências de um refactor"
+  default_prompt: "Use $gabriel-post-refactor no escopo indicado, seguindo as instruções do projeto."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "gabriel-codemap"
+  short_description: "Mapear responsabilidades e fluxos do código"
+  default_prompt: "Use $gabriel-codemap no escopo indicado, seguindo as instruções do projeto."

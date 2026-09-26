@@ -1,0 +1,4 @@
+interface:
+  display_name: "gabriel-simplify"
+  short_description: "Simplificar código preservando comportamento"
+  default_prompt: "Use $gabriel-simplify no escopo indicado, seguindo as instruções do projeto."

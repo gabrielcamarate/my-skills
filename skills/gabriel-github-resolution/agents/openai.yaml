@@ -1,0 +1,4 @@
+interface:
+  display_name: "gabriel-github-resolution"
+  short_description: "Executar correções aprovadas por auditoria"
+  default_prompt: "Use $gabriel-github-resolution no escopo indicado, seguindo as instruções do projeto."

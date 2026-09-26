@@ -1,51 +1,80 @@
 # Workflow de entrega
 
-## Responsabilidades
+## Direção
 
-- Gabriel OS: prioridades, roteamento, decisões e acompanhamento necessário.
-- Executor do projeto: contexto da issue, implementação, verificações e resultado.
-- Revisor: pergunta independente ou gate exigido pelo risco e pelo projeto.
-- Gabriel: decisões de produto e autorizações consequentes que ainda não existam.
+Gabriel OS coordena prioridades e continuidade. O executor do projeto entrega o
+escopo autorizado com evidência; Gabriel decide produto e ações consequentes ainda
+não autorizadas. Xlondz é o primeiro alvo de adoção, para concluir o produto e
+receber clientes. Rakmma conserva suas prioridades e gates. Low Ticket está fora.
 
-Retome a mesma tarefa quando seu executor estiver disponível. Não invente outro
-orquestrador, filas ou watchers. Preserve os checkpoints e a medição já existentes.
+A correspondência com Akita é de procedimentos e separação de responsabilidades,
+com adaptações documentadas. Não copiamos um runtime inteiro nem assumimos que
+suas autorizações pessoais valem nos nossos projetos.
 
-## Ciclo cotidiano
+## Ciclo principal
 
-1. Identifique projeto, issue, executor e resultado esperado.
-2. Reaproveite instruções, checkpoint e evidência; confirme o que pode ter mudado.
-3. Faça triagem quando a causa ou o escopo ainda não estiver claro.
-4. Implemente a mudança necessária, com verificações focadas durante a iteração.
-5. Aplique a revisão e os gates obrigatórios do projeto no candidato final.
-6. Prepare a entrega e execute apenas as operações já autorizadas.
-7. Confirme o comportamento no ambiente entregue e conclua o cleanup autorizado.
+| Entrada | Procedimento | Saída que permite avançar |
+|---|---|---|
+| Issue ou bug ainda não explicado | `gabriel-iss-audit` | Diagnóstico, decisão e menor correção |
+| PR para avaliação | `gabriel-pr-audit` | Parecer sobre base/head fixados |
+| Mudança não trivial | `gabriel-verification-planning` | Alegações e prova observável com orçamento |
+| Correção aprovada e autorizada | `gabriel-github-resolution` | Código, gates e entrega dentro da autoridade |
+| Lote de mais de 3 tickets de código | `gabriel-pr-post-audit` | Interações verificadas no candidato composto |
+| Atualizações compatíveis aprovadas | `gabriel-pr-bump` | Lote de dependências e lockfile verificados |
+| Candidato a lançamento | `gabriel-release` | Versão/artefato preparados; publicação se autorizada |
+| Artefato pronto | `gabriel-release-smoke-test` | Prova do caminho real de consumo |
+| Atrito recorrente | `gabriel-reflect` | Melhoria mínima sustentada por evidência |
 
-Edição simples não precisa passar por seis skills. A revisão não autoriza merge.
-Código validado não comprova staging ou produção. Um pipeline iniciado não é entrega.
+Auditoria e execução continuam distintas. Não é preciso carregar todas as skills
+para executar uma fase. Uma skill pode ter vários passos que convergem no mesmo
+resultado, como investigar, reproduzir e decidir uma issue.
 
-## Evidência mínima reutilizável
+## Especialidades
 
-Registre junto à tarefa: alegação/critério, candidato e alterações locais relevantes,
-ambiente/entradas, comando ou fonte, horário, resultado, limitações e invalidação.
-Não crie mais um ledger se o projeto já tem um. Reutilize CI equivalente quando permitido.
+- `simplify` altera expressão sem alterar comportamento; `post-refactor` revisa
+  as consequências de uma reorganização; `improve-codebase-architecture` trata
+  fronteiras e contratos. Não são três nomes para a mesma revisão.
+- `codemap` produz orientação persistente; `clonedeps` resolve dúvidas na fonte
+  de dependências. Não são passos obrigatórios ao abrir qualquer repositório.
+- `security-audit` aprofunda fronteiras de segurança quando o escopo exige.
+- `deepwork` coordena fases complexas; `worktrees` gerencia isolamento de arquivos;
+  `loop-engineering` limita tentativas com sucesso/parada observáveis.
+- `agent-browser` interage com UI e verifica renderização; `effect` só se aplica
+  à tecnologia presente ou à adoção solicitada.
+- `fact-check` verifica fatos; `humanizer` edita linguagem; `blog-cost-charts`
+  visualiza dados comparáveis. Não são carregadas como parte de toda entrega.
 
-## Conhecimento e instruções
+Todos os nomes usam prefixo `gabriel-`. Os plugins continuam disponíveis pelos
+próprios instaladores. A skill pessoal chama uma especialidade instalada somente
+quando ela atende o trabalho, sem duplicar duas auditorias idênticas por hábito.
 
-Instruções atuais do projeto definem os comandos e gates. Memória ajuda a encontrar
-decisões e causas anteriores, mas não concede autoridade nem demonstra estado atual.
-Mantenha decisões estáveis na fonte canônica autorizada. Checkpoints ficam na tarefa.
-Este repositório fornece procedimentos reutilizáveis, sem copiar runbooks privados.
+## Continuidade, evidência e autoridade
 
-## Dependências e mudanças compostas
+Identifique projeto/issue/executor antes de agir. Retome a tarefa existente e seu
+checkpoint; nova tarefa só dentro da autoridade real do aplicativo. Registre revisão,
+branch/worktree, dirty state, ambiente, decisões, provas válidas, blockers, próxima
+ação, autorizações com alvo/escopo e processos/watcher quando houver.
 
-Quando houver uma fila autorizada de atualizações compatíveis de dependências,
-considere um lote pequeno e uma verificação do conjunto. Confira registry, origem,
-lockfile e scripts novos. Major, migração ou mudança de comportamento requerem escopo
-próprio. Use o gerenciador do projeto. Não encerre PRs nem publique por inferência.
-Após várias alterações relacionadas, revise suas interações se houver risco concreto.
+Evidência reutilizável: alegação, candidato/entradas relevantes, ambiente, fonte ou
+comando, horário, resultado, limites e condição de invalidação. Reuse enquanto
+compatível; preserve gates finais obrigatórios. Não crie outro ledger, watcher ou
+monitor quando os registros do projeto/Gabriel OS já atendem.
 
-## Melhorar sem interromper a entrega
+Em sessão operacional, respeite recursos próprios, prazo absoluto, orçamento
+cumulativo, tentativas, falhas recuperáveis, paradas críticas e cleanup. Preserve
+fixtures autorizadas em falhas recuperáveis e a primeira falha sanitizada. Resultado
+incerto de mutação deve ser reconciliado antes de retry. Teste defeitos do runner
+localmente antes de outra janela ao vivo.
 
-Use gabriel-reflect quando houver evidência de atrito. Priorize eliminar uma repetição,
-encurtar um diagnóstico ou tornar um comando previsível. As medidas são tempo até aceite,
-retrabalho, espera, intervenções e regressões; contagem de skills não mede eficiência.
+Código pronto, CI verde, staging e produção são estados distintos. Fechamento de
+issue depende de seus critérios, não apenas da existência de um commit. Merge,
+deploy, publicação, gastos e memória têm autoridade própria. Autorizações válidas
+já concedidas não precisam ser pedidas novamente no mesmo escopo. No Xlondz,
+cleanup pós-merge autorizado permanece obrigatório e preserva trabalho alheio.
+
+## Medir e melhorar
+
+Use tempo até aceite, retrabalho, espera/intervenções e regressões em tarefas
+comparáveis. Não use contagem de skills ou tempo de turno como prova de eficiência.
+Aplique `reflect` diante de atrito demonstrado e prefira corrigir a fonte existente
+a criar outra camada. Instalação é preparação; piloto real verifica comportamento.

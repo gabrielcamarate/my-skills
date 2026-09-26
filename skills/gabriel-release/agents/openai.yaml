@@ -1,4 +1,4 @@
 interface:
-  display_name: "Preparação e execução de releases"
-  short_description: "Preparar releases e executar publicação autorizada"
-  default_prompt: "Use $gabriel-release no escopo desta tarefa e siga as instruções do projeto."
+  display_name: "gabriel-release"
+  short_description: "Preparar e verificar releases versionadas"
+  default_prompt: "Use $gabriel-release no escopo indicado, seguindo as instruções do projeto."

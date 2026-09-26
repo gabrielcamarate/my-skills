@@ -1,0 +1,4 @@
+interface:
+  display_name: "gabriel-loop-engineering"
+  short_description: "Executar ciclos com sucesso e parada definidos"
+  default_prompt: "Use $gabriel-loop-engineering no escopo indicado, seguindo as instruções do projeto."

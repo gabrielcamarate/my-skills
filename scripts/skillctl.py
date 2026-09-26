@@ -42,7 +42,41 @@ def validate(root=ROOT):
             raise ValueError(f"Invalid description: {name}")
         if "/home/" in text or "TODO" in text or "[INSERT" in text:
             raise ValueError(f"Nonportable path or unfinished scaffold: {name}")
+        for link in re.findall(r"\]\((references/[^)]+)\)", parts[2]):
+            reference = (root / "skills" / name / link).resolve()
+            if not reference.is_relative_to((root / "skills" / name).resolve()) or not reference.is_file():
+                raise ValueError(f"Missing or escaping reference: {name}/{link}")
+        ui = (root / "skills" / name / "agents/openai.yaml").read_text()
+        fields = dict(line.strip().split(":", 1) for line in ui.splitlines() if line.startswith("  "))
+        short = json.loads(fields["short_description"].strip())
+        prompt = json.loads(fields["default_prompt"].strip())
+        if not 25 <= len(short) <= 64 or f"${name}" not in prompt:
+            raise ValueError(f"Invalid interface metadata: {name}")
+    retired_inventory(root)
     return names
+
+
+def retired_inventory(root=ROOT):
+    manifest = json.loads((root / "skills.json").read_text())
+    names = manifest.get("retired", [])
+    if len(names) != len(set(names)) or set(names) & set(manifest["skills"]):
+        raise ValueError("Duplicate or active retired skill")
+    for name in names:
+        if not isinstance(name, str) or not re.fullmatch(r"gabriel-[a-z0-9-]{1,55}", name):
+            raise ValueError("Invalid retired skill name")
+    return names
+
+
+def retired_plan(root, home, targets):
+    rows = []
+    for target in targets:
+        for name in retired_inventory(root):
+            src = (root / "skills" / name).resolve()
+            dst = home / LOCATIONS[target] / name
+            owned = dst.is_symlink() and dst.resolve() == src
+            status = "linked" if owned else "conflict" if dst.exists() or dst.is_symlink() else "missing"
+            rows.append({"target": target, "source": str(src), "link": str(dst), "status": status})
+    return rows
 
 
 def plan(root, home, targets):
@@ -88,6 +122,13 @@ def uninstall(rows):
             dst.unlink()
 
 
+def migrate(rows, retired):
+    # Install all replacements before retiring owned links. A failed install
+    # leaves the old links alone; foreign retired destinations stay untouched.
+    install(rows)
+    uninstall(retired)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("command", choices=["validate", "status", "install", "uninstall"])
@@ -101,13 +142,14 @@ def main():
             return 0
         targets = list(LOCATIONS) if args.target == "all" else [args.target]
         rows = plan(ROOT, args.home.expanduser().resolve(), targets)
-        print(json.dumps(rows, indent=2, ensure_ascii=False))
+        retired = retired_plan(ROOT, args.home.expanduser().resolve(), targets)
+        print(json.dumps({"active": rows, "retired": retired}, indent=2, ensure_ascii=False))
         if args.command == "install" and args.apply:
-            install(rows)
+            migrate(rows, retired)
         elif args.command == "uninstall" and args.apply:
-            uninstall(rows)
+            uninstall(rows + retired)
         elif args.command == "status":
-            return int(any(r["status"] != "linked" for r in rows))
+            return int(any(r["status"] != "linked" for r in rows) or any(r["status"] == "linked" for r in retired))
         return 0
     except (ValueError, OSError, KeyError, TypeError) as exc:
         print(f"ERROR: {exc}")

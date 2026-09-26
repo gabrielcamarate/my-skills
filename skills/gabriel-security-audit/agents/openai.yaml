@@ -1,0 +1,4 @@
+interface:
+  display_name: "gabriel-security-audit"
+  short_description: "Auditar fronteiras e caminhos de ataque"
+  default_prompt: "Use $gabriel-security-audit no escopo indicado, seguindo as instruções do projeto."

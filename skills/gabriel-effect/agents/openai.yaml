@@ -1,0 +1,4 @@
+interface:
+  display_name: "gabriel-effect"
+  short_description: "Implementar Effect na versão do projeto"
+  default_prompt: "Use $gabriel-effect no escopo indicado, seguindo as instruções do projeto."

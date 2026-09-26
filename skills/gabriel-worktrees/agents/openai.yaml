@@ -1,0 +1,4 @@
+interface:
+  display_name: "gabriel-worktrees"
+  short_description: "Gerenciar worktrees sem perder trabalho"
+  default_prompt: "Use $gabriel-worktrees no escopo indicado, seguindo as instruções do projeto."

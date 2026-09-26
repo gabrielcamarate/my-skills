@@ -1,0 +1,4 @@
+interface:
+  display_name: "gabriel-pr-post-audit"
+  short_description: "Auditar interações entre mudanças do lote"
+  default_prompt: "Use $gabriel-pr-post-audit no escopo indicado, seguindo as instruções do projeto."

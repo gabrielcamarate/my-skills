@@ -1,0 +1,4 @@
+interface:
+  display_name: "gabriel-verification-planning"
+  short_description: "Planejar evidências sem repetir trabalho"
+  default_prompt: "Use $gabriel-verification-planning no escopo indicado, seguindo as instruções do projeto."

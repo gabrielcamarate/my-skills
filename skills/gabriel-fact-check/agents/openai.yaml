@@ -1,0 +1,4 @@
+interface:
+  display_name: "gabriel-fact-check"
+  short_description: "Conferir fatos, fontes e coerência de textos"
+  default_prompt: "Use $gabriel-fact-check no escopo indicado, seguindo as instruções do projeto."

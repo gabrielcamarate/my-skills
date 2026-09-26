@@ -1,0 +1,4 @@
+interface:
+  display_name: "gabriel-deepwork"
+  short_description: "Coordenar fases complexas com gates claros"
+  default_prompt: "Use $gabriel-deepwork no escopo indicado, seguindo as instruções do projeto."
