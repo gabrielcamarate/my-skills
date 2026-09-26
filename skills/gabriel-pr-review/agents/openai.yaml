@@ -1,0 +1,4 @@
+interface:
+  display_name: "Revisão de PR com evidências"
+  short_description: "Revisar mudanças com riscos e evidências concretas"
+  default_prompt: "Use $gabriel-pr-review no escopo desta tarefa e siga as instruções do projeto."

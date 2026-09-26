@@ -1,0 +1,4 @@
+interface:
+  display_name: "Verificação proporcional de entregas"
+  short_description: "Comprovar entregas sem repetir verificações válidas"
+  default_prompt: "Use $gabriel-verify no escopo desta tarefa e siga as instruções do projeto."

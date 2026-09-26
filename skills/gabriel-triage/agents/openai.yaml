@@ -1,0 +1,4 @@
+interface:
+  display_name: "Triagem de issues e bugs"
+  short_description: "Triar bugs com evidência e critérios de aceite"
+  default_prompt: "Use $gabriel-triage no escopo desta tarefa e siga as instruções do projeto."

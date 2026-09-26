@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": [
+    "gabriel-triage",
+    "gabriel-pr-review",
+    "gabriel-resolve",
+    "gabriel-verify",
+    "gabriel-release",
+    "gabriel-reflect"
+  ]
+}

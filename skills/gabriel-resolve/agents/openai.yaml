@@ -1,0 +1,4 @@
+interface:
+  display_name: "Resolução de issues com continuidade"
+  short_description: "Resolver issues preservando contexto e validação"
+  default_prompt: "Use $gabriel-resolve no escopo desta tarefa e siga as instruções do projeto."
