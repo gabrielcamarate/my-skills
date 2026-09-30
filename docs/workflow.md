@@ -2,10 +2,10 @@
 
 ## Direção
 
-Gabriel OS coordena prioridades e continuidade. O executor do projeto entrega o
-escopo autorizado com evidência; Gabriel decide produto e ações consequentes ainda
-não autorizadas. Xlondz é o primeiro alvo de adoção, para concluir o produto e
-receber clientes. Rakmma conserva suas prioridades e gates. Low Ticket está fora.
+O responsável pelo projeto coordena prioridades e continuidade. O executor entrega
+o escopo autorizado com evidência; o usuário decide produto e ações consequentes
+ainda não autorizadas. Regras, serviços, prioridades e autorizações particulares
+ficam nas instruções do projeto consumidor, não neste pacote público.
 
 A correspondência com Akita é de procedimentos e separação de responsabilidades,
 com adaptações documentadas. Não copiamos um runtime inteiro nem assumimos que
@@ -69,8 +69,8 @@ localmente antes de outra janela ao vivo.
 Código pronto, CI verde, staging e produção são estados distintos. Fechamento de
 issue depende de seus critérios, não apenas da existência de um commit. Merge,
 deploy, publicação, gastos e memória têm autoridade própria. Autorizações válidas
-já concedidas não precisam ser pedidas novamente no mesmo escopo. No Xlondz,
-cleanup pós-merge autorizado permanece obrigatório e preserva trabalho alheio.
+já concedidas não precisam ser pedidas novamente no mesmo escopo. Quando o projeto
+exige cleanup pós-merge e já o autoriza, preserve essa exigência e trabalho alheio.
 
 ## Medir e melhorar
 

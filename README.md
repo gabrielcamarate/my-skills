@@ -1,5 +1,10 @@
 # my-skills
 
+[![Validate skills](https://github.com/gabrielcamarate/my-skills/actions/workflows/validate.yml/badge.svg)](https://github.com/gabrielcamarate/my-skills/actions/workflows/validate.yml)
+
+Skills próprias para Codex e Claude Code. Conteúdo em português brasileiro,
+distribuído sob [MIT](LICENSE), com [autoria e créditos](NOTICE.md).
+
 23 procedimentos próprios com correspondência 1:1 aos objetivos do catálogo de
 Fabio Akita consultado em 26/09/2026. Adaptados para Gabriel, Codex/Claude e os gates
 dos projetos. O [mapa de origem e adaptações](docs/akita-mapping.md) explica cada diferença.
@@ -58,6 +63,8 @@ para entrada, saída e limites. Uma pequena edição não exige percorrer essa c
 Python 3, sem dependências externas no instalador:
 
 ```bash
+git clone https://github.com/gabrielcamarate/my-skills.git
+cd my-skills
 python3 scripts/skillctl.py validate
 python3 -m unittest discover -s tests -v
 python3 scripts/skillctl.py install
@@ -92,6 +99,12 @@ python3 scripts/skillctl.py uninstall --apply
 Antes de mover o checkout, desinstale, mova e reinstale. Não há atualização remota
 automática. Mudanças no upstream são comparadas conscientemente com o commit e
 hashes registrados em `docs/upstream-map.json`.
+
+Para atualizar este pacote, com checkout limpo, execute `git pull --ff-only`,
+valide e aplique novamente o instalador: links existentes acompanham o conteúdo;
+o instalador reconcilia skills adicionadas ou aposentadas sem substituir terceiros.
+Quem utiliza este pacote em outro ambiente precisa de um checkout acessível nesse
+ambiente. Links do computador pessoal não são sincronizados para o Cloud.
 
 ## Manutenção e limites
 

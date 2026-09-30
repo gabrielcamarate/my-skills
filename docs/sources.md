@@ -35,3 +35,6 @@ O texto local é uma adaptação própria. Scripts e arquivos auxiliares do upst
 não foram vendorizados, nem foi presumida uma licença geral para o repositório.
 A separação e os procedimentos preservam o modelo do autor; permissões, runtime,
 voz, plataformas e condições de aceite seguem nossa realidade e estão discriminados.
+
+O conteúdo próprio é publicado sob MIT. Veja [autoria e créditos](../NOTICE.md)
+para o escopo dessa licença e os limites referentes às fontes externas.

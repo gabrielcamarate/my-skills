@@ -6,7 +6,7 @@ description: "Trabalhar em código TypeScript que já usa Effect, verificando AP
 # Effect
 
 ## Escopo
-Aplique apenas a projetos que já usam Effect ou cuja adoção foi explicitamente solicitada. Esta skill não recomenda migrar Xlondz ou Rakmma para Effect.
+Aplique apenas a projetos que já usam Effect ou cuja adoção foi explicitamente solicitada. Esta skill não recomenda migrar outros projetos para Effect por associação.
 
 1. Confirme versão resolvida, arquitetura e helpers de teste existentes. O original foi escrito para Effect v4/effect-smol; não assuma que esse é o ambiente atual.
 2. Consulte documentação e fontes oficiais da versão aplicável. Use `gabriel-clonedeps` quando precisar da implementação. Verifique cada API sensível à versão, em vez de transportar exemplos v2/v3/v4 por semelhança de nome.

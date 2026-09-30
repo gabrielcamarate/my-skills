@@ -14,7 +14,7 @@ Escopo e estratégia de release do projeto, candidato integrado e autoridade atu
 4. Prepare changelog, instruções de upgrade/rollback, artefatos e destino. Fixe SHA e hashes disponíveis. Use `gabriel-release-smoke-test` para provar o artefato que será entregue; o checkout de desenvolvimento não o substitui.
 5. Antes da publicação, revalide head, tags existentes, autoridade e CI exato. Se uma tag já existe, compare seu alvo e a publicação correspondente. Nunca mova uma tag publicada silenciosamente nem trate retry como permissão para sobrescrever artefato.
 6. Publique pelo mecanismo documentado somente dentro da autorização. Em timeout, reconcilie tag, release e artefatos antes de repetir. Verifique o destino e o artefato realmente distribuído. Deploy, migrações e produção conservam seus gates próprios.
-7. Confirme estado remoto e comportamento relevante. Execute limpeza autorizada. No Xlondz, preserve a regra de cleanup pós-merge do projeto; não remova worktree ativa, dirty ou com arquivos ignorados de usuário.
+7. Confirme estado remoto e comportamento relevante. Execute limpeza já autorizada pelas regras do projeto; não remova worktree ativa, dirty ou com arquivos ignorados de usuário. Esta skill não estabelece uma autorização de cleanup.
 
 ## Entrega
 Versão, SHA, CI, artefatos/hash e destino, smoke efetivamente executado, aceite operacional e pendências. Distingua preparado, publicado e validado em produção. Não apresente release iniciada como concluída.

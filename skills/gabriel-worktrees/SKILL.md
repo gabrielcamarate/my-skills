@@ -17,4 +17,4 @@ Separar arquivos e branches de trabalho quando houver necessidade de isolamento.
 7. Inspecione arquivos tracked, untracked e ignorados antes de remover. Preserve main, branches avançadas/não integradas, worktrees locked/ativas/dirty e quaisquer arquivos de usuário ou segredos. Nunca force remoção para fazer cleanup parecer concluído. Se o executor não pode remover seu próprio checkout, a coordenação conclui após ele parar.
 
 ## Saída
-Inventário final de branches/worktrees, alterações executadas e itens preservados com motivo. No Xlondz, aplique a autorização de cleanup pós-merge já existente sem pedi-la de novo; ela não autoriza o merge.
+Inventário final de branches/worktrees, alterações executadas e itens preservados com motivo. Aplique autorizações de cleanup já existentes no projeto sem pedi-las de novo dentro do mesmo escopo; esta skill não concede cleanup ou merge.

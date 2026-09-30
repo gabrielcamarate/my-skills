@@ -1,0 +1,24 @@
+name: Validate skills
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Validate catalog and shared instructions
+        run: python3 scripts/skillctl.py validate
+      - name: Test installer with temporary homes
+        run: python3 -m unittest discover -s tests -v
+      - name: Check whitespace
+        run: git diff-tree --check HEAD
