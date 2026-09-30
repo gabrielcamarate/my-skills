@@ -78,3 +78,9 @@ Use tempo até aceite, retrabalho, espera/intervenções e regressões em tarefa
 comparáveis. Não use contagem de skills ou tempo de turno como prova de eficiência.
 Aplique `reflect` diante de atrito demonstrado e prefira corrigir a fonte existente
 a criar outra camada. Instalação é preparação; piloto real verifica comportamento.
+
+## Busca semântica opcional
+
+Quatro procedimentos usam o launcher `my-tools` quando há descoberta de código: `gabriel-iss-audit`, `gabriel-github-resolution`, `gabriel-codemap` e `gabriel-improve-codebase-architecture`. Os outros 19 mantêm seus procedimentos. Não há skill extra nem passagem obrigatória pelo modelo externo antes de cada tarefa.
+
+A configuração local de cada consumidor define ativação, permissão remota, versão e `globs`. As skills exigem escopo salvo para esta integração; o launcher aplica os padrões mesmo quando o agente omite `--glob`. A seleção de uma skill depende do pedido e do runtime. Para um teste explícito, peça `Use $gabriel-iss-audit para investigar ...` numa conversa nova e confira a chamada de `my-tools search`. Links locais acompanham a fonte editada; outro computador ou Cloud precisa de instalação e validação próprias.

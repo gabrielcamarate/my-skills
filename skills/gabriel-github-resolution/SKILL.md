@@ -17,5 +17,10 @@ Decisão de `gabriel-iss-audit` ou `gabriel-pr-audit` e autorização para execu
 6. Confira candidato final, revisão exigida e CI correspondente. Prepare PR/entrega concretos. Execute publicação, merge ou deploy apenas quando a autorização cobrir essas ações. Não peça novamente por ações já autorizadas no mesmo escopo.
 7. Quando houver integração autorizada, verifique SHA resultante e checks de composição. Feche uma issue somente com autorização e critérios concluídos; se o aceite inclui produção ou carga real, código integrado não basta. Execute cleanup já autorizado pelo projeto, preservando trabalho alheio.
 
+## Busca de código com my-tools
+Quando precisar localizar um comportamento sem conhecer nomes exatos, execute `my-tools --project RAIZ status`. Se search estiver habilitado, permitir envio remoto e possuir uma lista não vazia de `globs` autorizados, prefira `my-tools --project RAIZ search "comportamento procurado" --top 5 --json --stats`. O launcher aplica o escopo salvo; não amplie padrões nem habilite envio por conta própria. Não envie credenciais, dados privados ou consultas com conteúdo sensível.
+
+Use `rg` para símbolos, caminhos e mensagens exatos, ou quando o launcher estiver ausente, bloqueado, falhar ou não trouxer evidência suficiente. Leia os arquivos e chamadores relevantes para confirmar o resultado; ranking não prova comportamento nem cobre todo o código. Reutilize contexto já conhecido, sem repetir busca apenas para cumprir esta orientação. Mencione o uso e eventuais limites na entrega; economia só pode ser afirmada com medição comparável.
+
 ## Entrega
 Liste cada ticket concluído com revisão, prova e estado real; cada ticket deixado de fora com motivo e próximo passo. Separe código pronto, integração, aceite operacional e release. Não espere uma release futura para fechar um ticket cujo critério já terminou, nem feche antecipadamente um ticket operacional.

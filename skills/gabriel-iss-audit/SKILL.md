@@ -17,5 +17,10 @@ Separar o problema observado do diagnóstico sugerido pelo autor e produzir uma 
 6. Escolha: corrigir agora; corrigir após decisão de desenho; documentação; duplicata; pedir informação específica; recusar com motivo demonstrável. Separe os tickets aprovados dos que permanecem pendentes.
 7. Para a correção aprovada, defina a causa, a menor mudança, comportamento preservado e prova de regressão. Encaminhe a execução para `gabriel-github-resolution` quando autorizada.
 
+## Busca de código com my-tools
+Quando precisar localizar um comportamento sem conhecer nomes exatos, execute `my-tools --project RAIZ status`. Se search estiver habilitado, permitir envio remoto e possuir uma lista não vazia de `globs` autorizados, prefira `my-tools --project RAIZ search "comportamento procurado" --top 5 --json --stats`. O launcher aplica o escopo salvo; não amplie padrões nem habilite envio por conta própria. Não envie credenciais, dados privados ou consultas com conteúdo sensível.
+
+Use `rg` para símbolos, caminhos e mensagens exatos, ou quando o launcher estiver ausente, bloqueado, falhar ou não trouxer evidência suficiente. Leia os arquivos e chamadores relevantes para confirmar o resultado; ranking não prova comportamento nem cobre todo o código. Reutilize contexto já conhecido, sem repetir busca apenas para cumprir esta orientação. Mencione o uso e eventuais limites na entrega; economia só pode ser afirmada com medição comparável.
+
 ## Entrega
 Issue/revisão; evidência e limites; causa confirmada ou hipótese; decisão e justificativa; mudança proposta; validação; próximo passo. Uma resposta para o autor pode ser preparada como rascunho, mas publicação e fechamento dependem da autoridade existente. Aceite operacional pendente impede afirmar conclusão quando faz parte do ticket.

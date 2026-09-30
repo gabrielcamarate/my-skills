@@ -15,5 +15,10 @@ Encontrar uma fronteira de módulo que esconda complexidade atrás de uma interf
 5. Resolva apenas decisões ainda abertas por perguntas focadas. Não interrogue novamente sobre escolhas confirmadas nem trate toda alternativa técnica como pedido obrigatório de permissão.
 6. Para implementação já autorizada, defina um corte que preserve comportamento, migração e prova. Decisão nova de produto ou expansão de escopo precisa ser resolvida antes da parte dependente.
 
+## Busca de código com my-tools
+Quando precisar localizar um comportamento sem conhecer nomes exatos, execute `my-tools --project RAIZ status`. Se search estiver habilitado, permitir envio remoto e possuir uma lista não vazia de `globs` autorizados, prefira `my-tools --project RAIZ search "comportamento procurado" --top 5 --json --stats`. O launcher aplica o escopo salvo; não amplie padrões nem habilite envio por conta própria. Não envie credenciais, dados privados ou consultas com conteúdo sensível.
+
+Use `rg` para símbolos, caminhos e mensagens exatos, ou quando o launcher estiver ausente, bloqueado, falhar ou não trouxer evidência suficiente. Leia os arquivos e chamadores relevantes para confirmar o resultado; ranking não prova comportamento nem cobre todo o código. Reutilize contexto já conhecido, sem repetir busca apenas para cumprir esta orientação. Mencione o uso e eventuais limites na entrega; economia só pode ser afirmada com medição comparável.
+
 ## Entrega
 Proposta ou mudança escolhida, alternativas rejeitadas com motivo, contrato, caminho de migração e validação. Registre decisão durável somente na fonte e dentro da autorização apropriadas; não escreva em memória por consequência desta skill.
