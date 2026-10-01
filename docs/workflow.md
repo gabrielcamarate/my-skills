@@ -96,3 +96,7 @@ Quatro skills orientam a seleção: `gabriel-github-resolution`, `gabriel-loop-e
 O wrapper lê `OPENROUTER_API_KEY` do processo ou a configuração pessoal privada já usada pelo Siftr. Não grava uma segunda chave, não consulta `.env` dos projetos e não imprime credenciais. O Cloud deve fornecer essa credencial por sua própria configuração; os arquivos pessoais do desktop não são transportados pelos três repositórios.
 
 Pruner reduz stdout extenso elegível antes de o agente recebê-lo; não elimina testes nem intercepta todo comando. O original fica em `.jev-pruner/`, fora do Git. Sua avaliação inclui histórico da sessão: autorize o conjunto dos dados, não apenas um log. A redução de texto pode economizar contexto futuro, mas não comprova economia total ou menor latência. Falhas preservam a saída integral. Veja o guia `docs/jev-pruner.md` no My Tools para instalação, testes e requisitos Cloud.
+
+## Seleção de testes na iteração
+
+`gabriel-github-resolution`, `gabriel-loop-engineering` e `gabriel-verification-planning` remetem à skill oficial `jev-test-filter`, gerenciada pelo My Tools. A CLI escolhe testes pelo diff e usa `--exec` para passar os argumentos ao runner. Compartilha OpenRouter com as outras ferramentas; não precisa de MCP, hook ou transcrição. Use em suítes lentas, preservando gates finais e envio somente de dados autorizados. Instalar os três repositórios no Cloud ainda exige preparar comando, skill, runtime e credencial/rede no ambiente.
