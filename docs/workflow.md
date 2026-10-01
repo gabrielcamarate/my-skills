@@ -86,3 +86,11 @@ Quatro procedimentos orientam o uso do Siftr: `gabriel-iss-audit`, `gabriel-gith
 O my-tools centraliza fonte, SHA aceito, instalação e troca do executável oficial. O MCP deve estar registrado no cliente e conectado na sessão. As skills orientam a escolha antes da primeira busca: localização confirmada → leitura; símbolo exato → rg; comportamento sem localização confirmada → semantic_search. Disponibilidade não garante seleção implícita em todo pedido.
 
 O MCP oficial não impõe isolamento nem allowlist por projeto. Caminhos/dados precisam ser autorizados em cada tarefa; ferramentas nativas não concedem autoridade para envio de conteúdo privado ou dispensam gates. Outro computador ou Cloud precisa de instalação, credencial e configuração próprias.
+
+## Jev Pruner e provedor único
+
+Gabriel definiu que as ferramentas devem usar a mesma chave OpenRouter, disponibilizada pelo ambiente `OPENROUTER_API_KEY`, somente em interfaces oficialmente compatíveis. My-tools gerencia versões e instalação; a chave não deve entrar no Git ou em instruções de skills. Não renomeie uma chave OpenRouter para TYPESAFE_API_KEY nem envie essa credencial ao endpoint de outro provedor.
+
+O Jev Pruner foi instalado pelo plugin oficial, que fornece sua própria skill; não há cópia dela entre as 23 skills canônicas. Na revisão edbc60262a5edc07e18d646c1a3f8a9f0ae868c5, o wrapper Codex exige TYPESAFE_API_KEY e usa diretamente o endpoint TypeSafe com state/questions. Portanto está desabilitado e pendente de compatibilidade oficial com OpenRouter. Não use, reabilite ou acrescente adaptações próprias para contornar essa restrição.
+
+Seu propósito é reduzir stdout extenso antes de o agente recebê-lo, preservando texto original e recuperação por arquivo. Só saídas acima de 10 mil tokens estimados são elegíveis; há proteções e fallback com saída integral. Ele usa histórico da conversa na avaliação. Potencial de economia: menos saída levada ao contexto futuro; não reduz automaticamente o custo de executar testes, nem garante economia líquida ou menor latência. Não há poda live/ganho medido no nosso ambiente. Siftr permanece integrado pelo caminho oficial já validado; filter_output pode avaliar arquivos existentes conforme autorização, sem tornar o Pruner compatível.
