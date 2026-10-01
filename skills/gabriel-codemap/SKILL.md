@@ -15,10 +15,14 @@ Produzir um atlas de responsabilidades e fluxos, não uma listagem de arquivos. 
 5. Salve o mapa no lugar de documentação já adotado quando a tarefa autoriza a escrita. Registre revisão, data, arquivos-base e modo de atualização. Se existem hashes/manifesto incremental, compare apenas entradas relevantes e preserve regiões sem mudança; git diff e identidade das entradas podem cumprir o mesmo papel sem um daemon.
 6. Faça links relativos navegáveis. Inclua rota no AGENTS/CLAUDE somente quando a mudança dessas instruções está dentro do escopo, mantendo a paridade que o projeto exigir.
 
-## Busca de código com my-tools
-Quando precisar localizar um comportamento sem conhecer nomes exatos, execute `my-tools --project RAIZ status`. Se search estiver habilitado, permitir envio remoto e possuir uma lista não vazia de `globs` autorizados, prefira `my-tools --project RAIZ search "comportamento procurado" --top 5 --json --stats`. O launcher aplica o escopo salvo; não amplie padrões nem habilite envio por conta própria. Não envie credenciais, dados privados ou consultas com conteúdo sensível.
+## Ferramentas oficiais do Siftr (MCP)
+Antes da primeira busca, escolha pela evidência já disponível: com arquivo/trecho confirmado, leia diretamente; com símbolo ou mensagem exata, use `rg`; com apenas uma descrição do comportamento e sem localização confirmada, use primeiro `semantic_search` do MCP Siftr. Uma pasta presumida não é localização confirmada. Não faça várias buscas locais para depois cumprir esta orientação; não repita descoberta quando o contexto já basta.
 
-Use `rg` para símbolos, caminhos e mensagens exatos, ou quando o launcher estiver ausente, bloqueado, falhar ou não trouxer evidência suficiente. Leia os arquivos e chamadores relevantes para confirmar o resultado; ranking não prova comportamento nem cobre todo o código. Reutilize contexto já conhecido, sem repetir busca apenas para cumprir esta orientação. Mencione o uso e eventuais limites na entrega; economia só pode ser afirmada com medição comparável.
+Use `focused_read` quando precisar de uma parte de arquivo grande, e `pick_relevant` para priorizar uma lista de testes ou arquivos, preservando os gates obrigatórios. `filter_output` é experimental e lê um arquivo de saída existente; use apenas logs sintéticos ou saneados e autorizados. Identifique o servidor Siftr se houver ferramentas homônimas; não substitua suas chamadas por `my-tools search`.
+
+O MCP oficial precisa estar conectado na sessão e usa as ferramentas upstream sem proxy. Passe caminhos explícitos e filtros de código autorizados; nunca envie credenciais, dados financeiros/de clientes, documentos privados ou consultas sensíveis. Ele não aplica a configuração `.my-tools.json` do launcher legado: esses padrões não são uma barreira de acesso do MCP. Não instale nem amplie permissões por conta própria.
+
+Se o MCP estiver ausente, falhar ou trouxer evidência insuficiente, use `rg` e leitura direta e relate o limite. Confira implementação e chamadores; ranking não prova comportamento nem ausência de código. Registre chamadas e resultado quando houver avaliação; economia exige comparação equivalente.
 
 ## Entrega
 Atlas com entrada do sistema, mapa de diretórios por responsabilidade, fluxos, integrações, fontes e lacunas. Informe o que mudou na atualização e sua validade. Não crie agentes por pasta ou arquivos de estado do OpenCode em um runtime que não os usa.

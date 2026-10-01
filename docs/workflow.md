@@ -79,8 +79,10 @@ comparáveis. Não use contagem de skills ou tempo de turno como prova de efici�
 Aplique `reflect` diante de atrito demonstrado e prefira corrigir a fonte existente
 a criar outra camada. Instalação é preparação; piloto real verifica comportamento.
 
-## Busca semântica opcional
+## Ferramentas oficiais via MCP
 
-Quatro procedimentos usam o launcher `my-tools` quando há descoberta de código: `gabriel-iss-audit`, `gabriel-github-resolution`, `gabriel-codemap` e `gabriel-improve-codebase-architecture`. Os outros 19 mantêm seus procedimentos. Não há skill extra nem passagem obrigatória pelo modelo externo antes de cada tarefa.
+Quatro procedimentos orientam o uso do Siftr: `gabriel-iss-audit`, `gabriel-github-resolution`, `gabriel-codemap` e `gabriel-improve-codebase-architecture`. Os outros 19 mantêm seus procedimentos. O agente chama `semantic_search`, `focused_read`, `pick_relevant` e, para saída autorizada, `filter_output` experimental pelo MCP oficial. Não há proxy `my-tools search` nesse fluxo.
 
-A configuração local de cada consumidor define ativação, permissão remota, versão e `globs`. As skills exigem escopo salvo para esta integração; o launcher aplica os padrões mesmo quando o agente omite `--glob`. A seleção de uma skill depende do pedido e do runtime. Para um teste explícito, peça `Use $gabriel-iss-audit para investigar ...` numa conversa nova e confira a chamada de `my-tools search`. Links locais acompanham a fonte editada; outro computador ou Cloud precisa de instalação e validação próprias.
+O my-tools centraliza fonte, SHA aceito, instalação e troca do executável oficial. O MCP deve estar registrado no cliente e conectado na sessão. As skills orientam a escolha antes da primeira busca: localização confirmada → leitura; símbolo exato → rg; comportamento sem localização confirmada → semantic_search. Disponibilidade não garante seleção implícita em todo pedido.
+
+O MCP oficial não usa `.my-tools.json` nem aplica os filtros do launcher legado. Caminhos/dados precisam ser autorizados em cada tarefa; ferramentas nativas não concedem autoridade para envio de conteúdo privado ou dispensam gates. Outro computador ou Cloud precisa de instalação, credencial e configuração próprias.
