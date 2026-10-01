@@ -117,3 +117,10 @@ Veja [adoção e ferramentas](docs/adoption.md), [fontes](docs/sources.md),
 Instalação disponibiliza procedimentos pessoais; não comprova piloto de entrega,
 descoberta em nova sessão ou ganho de produtividade. Ferramentas externas, rollout
 nos projetos, publicação no GitHub, produção e captura de memória são escopos distintos.
+
+As skills `gabriel-agent-browser`, `gabriel-verification-planning` e
+`gabriel-release-smoke-test` orientam o uso do MCP `jev-playwright` e da skill
+upstream `jev-browser-playwright`, quando instalados pelo My Tools. A skill
+upstream fica na instalação da ferramenta, fora deste catálogo de 23 skills.
+O Chrome pessoal mantém sua própria conexão Jev Browser Control. Veja o
+[guia da ferramenta](https://github.com/gabrielcamarate/my-tools/blob/main/docs/jev-browser.md).
