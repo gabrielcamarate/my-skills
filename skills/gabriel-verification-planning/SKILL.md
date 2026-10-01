@@ -18,3 +18,10 @@ Transformar uma alegação de entrega em evidência observável com custo propor
 
 ## Saída
 Use o registro existente da tarefa: alegação → fonte/comando → candidato e ambiente → resultado → limites/invalidação. Não crie um segundo ledger ou monitor quando o projeto já possui um.
+
+## Saídas extensas com Jev Pruner
+Para builds, testes ou instalações não interativas que possam gerar logs extensos, consulte a skill do plugin `jev-pruner` antes de executar. Use seu wrapper original quando o plugin estiver disponível e histórico/saída estiverem autorizados para processamento externo. O My Tools configura OpenRouter com a mesma credencial do Siftr. Não exponha a chave nem a inclua no comando.
+
+Apenas stdout acima de 10 mil tokens estimados pode ser podado. Preserve workdir, argumentos, permissões, checks obrigatórios e critérios de aprovação. Não use para servidores/TTY, leitura de arquivos completos, diffs, dados estruturados ou conteúdo sensível; não aplique também `filter_output` do Siftr ao mesmo resultado. Se faltar runtime, histórico, chave ou rede, execute normalmente e registre a limitação.
+
+O wrapper mantém stderr/exit code e guarda o original no arquivo indicado pelo rodapé. Recupere-o quando faltar contexto. Só registre poda com marcador de omissão; menos texto não prova economia total nem um teste aprovado. Em Cloud, repositórios presentes não substituem instalação, credencial, rede e hook/histórico da sessão.
