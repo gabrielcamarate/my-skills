@@ -5,6 +5,8 @@ description: "Validar um artefato de release em ambiente limpo, usando o pacote 
 
 # Smoke do artefato de release
 
+Antes de uma operação elegível, siga a [escolha de ferramentas](../../docs/tool-routing.md); registre no checkpoint existente a interface usada ou o motivo concreto do fallback.
+
 ## Objetivo
 Detectar arquivos ausentes, entrypoints quebrados, dependências indevidas do checkout e problemas de configuração no artefato que o consumidor recebe.
 

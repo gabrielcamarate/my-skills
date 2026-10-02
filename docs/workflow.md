@@ -100,3 +100,7 @@ Pruner reduz stdout extenso elegível antes de o agente recebê-lo; não elimina
 ## Seleção de testes na iteração
 
 `gabriel-github-resolution`, `gabriel-loop-engineering` e `gabriel-verification-planning` remetem à skill oficial `jev-test-filter`, gerenciada pelo My Tools. A CLI escolhe testes pelo diff e usa `--exec` para passar os argumentos ao runner. Compartilha OpenRouter com as outras ferramentas; não precisa de MCP, hook ou transcrição. Use em suítes lentas, preservando gates finais e envio somente de dados autorizados. Instalar os três repositórios no Cloud ainda exige preparar comando, skill, runtime e credencial/rede no ambiente.
+
+## Escolha observável das ferramentas
+
+Use [tool-routing](tool-routing.md) nas operações elegíveis. Registre a chamada ou o motivo do fallback no checkpoint existente, sem outra coleta/monitor. Disponibilidade não é uso comprovado. Claude precisa de suas próprias skills e interfaces; links do My Tools compartilham a fonte upstream, não os registros MCP dos clientes.

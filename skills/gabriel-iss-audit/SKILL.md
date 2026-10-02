@@ -5,6 +5,8 @@ description: "Investigar uma issue ou bug e decidir causa, viabilidade e menor c
 
 # Auditoria de issue
 
+Antes de uma operação elegível, siga a [escolha de ferramentas](../../docs/tool-routing.md); registre no checkpoint existente a interface usada ou o motivo concreto do fallback.
+
 ## Resultado
 Separar o problema observado do diagnóstico sugerido pelo autor e produzir uma decisão executável. Esta etapa investiga; correção só começa quando já estiver autorizada.
 

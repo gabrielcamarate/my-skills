@@ -124,3 +124,7 @@ upstream `jev-browser-playwright`, quando instalados pelo My Tools. A skill
 upstream fica na instalação da ferramenta, fora deste catálogo de 23 skills.
 O Chrome pessoal mantém sua própria conexão Jev Browser Control. Veja o
 [guia da ferramenta](https://github.com/gabrielcamarate/my-tools/blob/main/docs/jev-browser.md).
+
+A escolha deve ser observável: nas operações elegíveis, o agente registra no checkpoint
+existente a interface usada ou o motivo do fallback. Consulte o [roteamento](docs/tool-routing.md).
+Instalar uma ferramenta não obriga inferência em toda tarefa nem amplia autorização de dados.

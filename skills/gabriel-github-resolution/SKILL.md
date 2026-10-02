@@ -5,6 +5,8 @@ description: "Executar correções de issues e PRs com decisão de auditoria apr
 
 # Execução de resoluções aprovadas
 
+Antes de uma operação elegível, siga a [escolha de ferramentas](../../docs/tool-routing.md); registre no checkpoint existente a interface usada ou o motivo concreto do fallback.
+
 ## Entrada
 Decisão de `gabriel-iss-audit` ou `gabriel-pr-audit` e autorização para executar o escopo. Se não há diagnóstico suficiente, faça a auditoria correspondente; não reabra uma decisão já sustentada por evidência válida. Tickets pendentes de informação ou desenho ficam fora do lote.
 

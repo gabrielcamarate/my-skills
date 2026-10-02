@@ -5,6 +5,8 @@ description: "Criar ou atualizar um mapa arquitetural de um repositório quando 
 
 # Mapa do repositório
 
+Antes de uma operação elegível, siga a [escolha de ferramentas](../../docs/tool-routing.md); registre no checkpoint existente a interface usada ou o motivo concreto do fallback.
+
 ## Objetivo
 Produzir um atlas de responsabilidades e fluxos, não uma listagem de arquivos. Não ativar para localizar uma função ou fazer uma edição pequena.
 

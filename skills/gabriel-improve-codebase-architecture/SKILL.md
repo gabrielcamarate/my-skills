@@ -5,6 +5,8 @@ description: "Investigar fronteiras de módulos e propor uma mudança estrutural
 
 # Melhorar arquitetura
 
+Antes de uma operação elegível, siga a [escolha de ferramentas](../../docs/tool-routing.md); registre no checkpoint existente a interface usada ou o motivo concreto do fallback.
+
 ## Objetivo
 Encontrar uma fronteira de módulo que esconda complexidade atrás de uma interface pequena e estável. A quantidade de camadas ou arquivos não mede qualidade.
 
