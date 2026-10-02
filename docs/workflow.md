@@ -104,3 +104,17 @@ Pruner reduz stdout extenso elegível antes de o agente recebê-lo; não elimina
 ## Escolha observável das ferramentas
 
 Use [tool-routing](tool-routing.md) nas operações elegíveis. Registre a chamada ou o motivo do fallback no checkpoint existente, sem outra coleta/monitor. Disponibilidade não é uso comprovado. Claude precisa de suas próprias skills e interfaces; links do My Tools compartilham a fonte upstream, não os registros MCP dos clientes.
+
+## Código e documentação na mesma revisão
+
+Ao abrir uma issue, escolher/verificar a base antes de interpretar guias como atuais;
+reler as instruções do worktree de destino, preservando checkout dirty/ativo. Ref
+atualizada não implica arquivos locais atualizados. Em continuidade, reutilizar o
+checkpoint e conferir somente entradas que mudaram.
+
+Uma alteração de contrato documentado exige atualizar seu guia canônico no mesmo PR.
+Identificar os paths relacionados ao escopo e registrar decisão/prova ou dispensa
+específica no ledger existente. Revisão aplicável confronta docs e código/testes do
+candidato, além de README/changelog. Um check estrutural não garante semântica.
+Não reescrever histórico como status atual nem iniciar reimplementação só porque
+um texto antigo diverge do candidato verificado.

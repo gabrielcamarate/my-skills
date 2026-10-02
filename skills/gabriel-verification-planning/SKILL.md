@@ -5,6 +5,8 @@ description: "Definir ou reconciliar a evidência necessária para provar uma mu
 
 # Planejamento de verificação
 
+Antes de afirmar contratos atuais, confirme base/SHA e leia instruções/guias na mesma revisão de trabalho; atualizar refs não atualiza um checkout antigo. Preserve trabalho dirty/ativo. Para contratos alterados, identifique os guias existentes, atualize-os no mesmo PR e registre paths/dispensas específicas; README/changelog não substituem documentação de domínio. Confronte texto com código/testes no candidato final e reutilize evidência válida.
+
 Antes de uma operação elegível, siga a [escolha de ferramentas](../../docs/tool-routing.md); registre no checkpoint existente a interface usada ou o motivo concreto do fallback.
 
 ## Objetivo

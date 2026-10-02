@@ -5,6 +5,8 @@ description: "Auditar um PR ou diff antes de integrar: confrontar alegações co
 
 # Auditoria de PR
 
+Antes de afirmar contratos atuais, confirme base/SHA e leia instruções/guias na mesma revisão de trabalho; atualizar refs não atualiza um checkout antigo. Preserve trabalho dirty/ativo. Para contratos alterados, identifique os guias existentes, atualize-os no mesmo PR e registre paths/dispensas específicas; README/changelog não substituem documentação de domínio. Confronte texto com código/testes no candidato final e reutilize evidência válida.
+
 ## Resultado
 Um parecer sobre uma revisão imutável, com achados acionáveis. Revisar não significa implementar, publicar ou integrar.
 
