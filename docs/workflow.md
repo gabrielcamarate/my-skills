@@ -120,3 +120,9 @@ Não reescrever histórico como status atual nem iniciar reimplementação só p
 um texto antigo diverge do candidato verificado.
 
 O fechamento cumpre a sincronização local exigida pelo projeto na sua branch de integração, após liberar o checkout compartilhado. Registrar SHAs e preservar arquivos/consumidores; não presumir que main é sempre o destino nem confundir sincronização Git com deploy/QA.
+
+
+A descoberta de ferramentas verifica o entrypoint exato, inclusive arquivos ignorados
+como `dist/`; listagem vazia não prova ausência. A decisão por tipo de operação fica
+no checkpoint existente, com interface usada ou motivo concreto do fallback. Na
+retomada, reaproveitar a descoberta válida. Consulte [tool-routing](tool-routing.md).

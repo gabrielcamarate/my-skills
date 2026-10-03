@@ -24,6 +24,8 @@ Transformar uma alegação de entrega em evidência observável com custo propor
 Use o registro existente da tarefa: alegação → fonte/comando → candidato e ambiente → resultado → limites/invalidação. Não crie um segundo ledger ou monitor quando o projeto já possui um.
 
 ## Saídas extensas com Jev Pruner
+Confirme o wrapper no caminho exato resolvido pela skill do plugin (`<plugin-root>/dist/codex/run.js`), não por `rg --files`, que pode ocultar `dist/`. Registre no checkpoint a causa específica de qualquer fallback; arquivo presente não prova hook/histórico/autorização. A execução exige chamar o wrapper, não apenas carregar a skill.
+
 Para builds, testes ou instalações não interativas que possam gerar logs extensos, consulte a skill do plugin `jev-pruner` antes de executar. Use seu wrapper original quando o plugin estiver disponível e histórico/saída estiverem autorizados para processamento externo. O My Tools configura OpenRouter com a mesma credencial do Siftr. Não exponha a chave nem a inclua no comando.
 
 Apenas stdout acima de 10 mil tokens estimados pode ser podado. Preserve workdir, argumentos, permissões, checks obrigatórios e critérios de aprovação. Não use para servidores/TTY, leitura de arquivos completos, diffs, dados estruturados ou conteúdo sensível; não aplique também `filter_output` do Siftr ao mesmo resultado. Se faltar runtime, histórico, chave ou rede, execute normalmente e registre a limitação.
