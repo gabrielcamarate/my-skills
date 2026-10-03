@@ -118,3 +118,5 @@ específica no ledger existente. Revisão aplicável confronta docs e código/te
 candidato, além de README/changelog. Um check estrutural não garante semântica.
 Não reescrever histórico como status atual nem iniciar reimplementação só porque
 um texto antigo diverge do candidato verificado.
+
+O fechamento cumpre a sincronização local exigida pelo projeto na sua branch de integração, após liberar o checkout compartilhado. Registrar SHAs e preservar arquivos/consumidores; não presumir que main é sempre o destino nem confundir sincronização Git com deploy/QA.

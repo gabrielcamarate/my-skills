@@ -18,3 +18,13 @@ Separar arquivos e branches de trabalho quando houver necessidade de isolamento.
 
 ## Saída
 Inventário final de branches/worktrees, alterações executadas e itens preservados com motivo. Aplique autorizações de cleanup já existentes no projeto sem pedi-las de novo dentro do mesmo escopo; esta skill não concede cleanup ou merge.
+
+## Checkout de desenvolvimento após integração
+
+Se o projeto exige sincronização local pós-merge, usar a branch de integração definida
+por ele (por exemplo staging, não main por hábito). Atualizar somente o checkout de
+desenvolvimento identificado e liberado, por fast-forward, preservando trabalho
+tracked/untracked/ignored, branches próprias e executores ativos. Conferir os SHAs
+local/remoto e registrar resultado ou blocker/consumidor/ação no recibo existente.
+Fetch ou outro worktree atualizado não certificam o destino. Sem força/reset/stash/clean
+ou promoção de produção; coordenação e mensagens seguem a autorização disponível.

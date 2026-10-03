@@ -45,3 +45,13 @@ O wrapper mantém stderr/exit code e guarda o original no arquivo indicado pelo 
 Quando uma suíte estiver lenta e o diff ainda precisar de feedback durante a implementação, consulte a skill upstream `jev-test-filter` instalada pelo My Tools antes de compor argumentos do runner. Use a CLI oficial com `--exec`: por exemplo, `jev-test-filter --format node --exec -- node --test` para edições locais. Confirme o diff e o framework. Sem `--base`, avalia alterações locais rastreadas contra HEAD. `--base BASE_CONFIRMADA` avalia somente commits entre a merge-base e HEAD; não inclui edições ainda não commitadas. Arquivos novos precisam estar no índice para entrar no diff. Vitest, Jest, Bun, Playwright, Go e Rust têm comandos próprios na skill; pytest não é suportado.
 
 Use somente diff e definições de testes autorizados para envio ao OpenRouter. A mesma `OPENROUTER_API_KEY` é reutilizada, sem copiar a chave por projeto. Se a ferramenta faltar, não houver seleção confiável, o framework for misto ou o diff for ambíguo, execute os testes relevantes diretamente. Falhas de API preservam execução ampla. Seleção probabilística serve ao feedback de iteração; nunca substitui gates finais, CI obrigatório ou a suíte exigida pelo projeto. Registre seleção, falhas e tempo quando houver comparação. Em suítes rápidas, o custo de seleção pode aumentar a duração.
+
+## Checkout de desenvolvimento após integração
+
+Se o projeto exige sincronização local pós-merge, usar a branch de integração definida
+por ele (por exemplo staging, não main por hábito). Atualizar somente o checkout de
+desenvolvimento identificado e liberado, por fast-forward, preservando trabalho
+tracked/untracked/ignored, branches próprias e executores ativos. Conferir os SHAs
+local/remoto e registrar resultado ou blocker/consumidor/ação no recibo existente.
+Fetch ou outro worktree atualizado não certificam o destino. Sem força/reset/stash/clean
+ou promoção de produção; coordenação e mensagens seguem a autorização disponível.
