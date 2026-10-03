@@ -130,3 +130,7 @@ retomada, reaproveitar a descoberta válida. Consulte [tool-routing](tool-routin
 ## Canny como evidência complementar
 
 Quando os hooks estiverem ativos no projeto e confiados no cliente, o Canny registra edições, checks e decisões de conclusão. `canny status` e `canny replay` ajudam a conferir o registro. Preservar os critérios reais: Canny aceita um check reconhecido após edição, não prova toda a issue, e seu modo padrão pode liberar outra tentativa com aviso. A instalação fica no My Tools; não há nova skill upstream. Cloud sem hooks do host mantém a verificação explícita normal.
+
+## Avaliação de decisões com Jeval
+
+Quando houver decisões probabilísticas e rótulos autorizados, Jeval mede confiabilidade antes de definir um limiar. As skills pessoais de planejamento de verificação e ciclo de execução remetem às seis skills upstream do My Tools. O avaliador é offline, não usa chave/MCP/hooks e não cria coleta automática. Preserve amostra, intervalos, gold/silver, autorização de dados e gates; relatório/limiar exportado não é política implantada.

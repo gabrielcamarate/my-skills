@@ -130,3 +130,5 @@ existente a interface usada ou o motivo do fallback. Consulte o [roteamento](doc
 Instalar uma ferramenta não obriga inferência em toda tarefa nem amplia autorização de dados.
 
 Canny é gerenciado pelo My Tools e mencionado em resolução, verificação e ciclos de implementação. Não tem skill upstream nesta revisão: usamos sua CLI e hooks oficiais, sem criar outra skill pessoal. Exige opt-in/confiança no cliente local; a CLI no Cloud não supervisiona uma conversa cujo host não oferece hooks.
+
+Jeval também fica no [My Tools](https://github.com/gabrielcamarate/my-tools): CLI offline e seis skills oficiais vinculadas à fonte upstream. `gabriel-verification-planning` e `gabriel-loop-engineering` orientam avaliação de decisões rotuladas. Não copiamos as skills do fornecedor para este catálogo de 23 procedimentos nem habilitamos coleta automática.
