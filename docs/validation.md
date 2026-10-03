@@ -48,3 +48,16 @@ O mapa documenta equivalência de objetivo e diferenças de procedimento. Não p
 que o comportamento será idêntico ao do Akita. Scripts específicos e runtime do
 upstream não foram importados. Nenhuma ferramenta complementar, publicação remota,
 configuração de captura ou operação de produção foi feita nesta reorganização.
+
+## Fase experimental obrigatória: 03/10/2026
+
+- Onze skills pertinentes atualizadas com gatilhos obrigatórios, dispensas concretas,
+  fallback e resumo de chamada/resultado na entrega. Catálogo permanece com 23 skills.
+- `skillctl.py validate`: 23 skills, links de referências e paridade válidos.
+- Sete testes do instalador e quick_validate das onze skills alteradas passaram.
+- Revisão de cenários em docs/evaluation.md; nenhuma tarefa real de projeto foi
+  executada para comprovar obediência ou ganho nesta mudança de instruções.
+- My Tools: documentação correspondente, scanner público e 90 testes aprovados.
+- Nenhuma alteração de runtime, hooks, chave, gates ou coleta automática. Novas
+  tarefas locais devem carregar os links atualizados; sessão antiga pode conservar
+  contexto anterior. Publicação não comprova sincronização Cloud.

@@ -37,3 +37,11 @@ A correspondência é de objetivos e procedimentos. O conteúdo foi redigido par
 ## Limites de fidelidade
 
 Preservamos a separação auditoria/execução, o gate composto acima de três tickets, leitura adversarial, versão/candidato exatos, smoke do artefato, reflexão e especialidades distintas. Adaptamos permissões, ferramentas, paths, tecnologias e voz. Não transportamos permissões de merge/publicação do autor, callbacks do OpenCode, S3 pessoal ou agentes inexistentes. Procedimento escrito não comprova qualidade do executor: o piloto real continua necessário.
+
+## Adaptação experimental de 03/10/2026
+
+Gabriel solicitou uso obrigatório das ferramentas My Tools nos gatilhos compatíveis
+para avaliar impacto durante tarefas reais. Onze procedimentos pertinentes remetem
+a docs/tool-routing.md, com chamadas oficiais, dispensas concretas e fallback. Essa
+obrigação é uma decisão de Gabriel, não uma recomendação atribuída a Akita. Preserva
+gates, dados autorizados, interfaces originais e ausência de coleta automática.

@@ -49,3 +49,20 @@ Todos os nomes acima levam `gabriel-`. A avaliação deve registrar quais skills
 foram realmente carregadas e se houve competição de gatilhos, expansão de escopo,
 repetição de verificações ou conclusão sem evidência. Corrija desvios demonstrados,
 não multiplique regras preventivas para hipóteses ainda não observadas.
+
+## Cenários da fase obrigatória: 03/10/2026
+
+| Situação | Comportamento exigido |
+|---|---|
+| Descrição de bug sem símbolo/localização, Siftr disponível | Chamada semântica antes da busca exploratória nativa |
+| MCP ausente e CLI oficial Siftr disponível | CLI oficial, sem tratar ausência de MCP como ausência da ferramenta |
+| Função/arquivo exatos já fornecidos | Leitura/rg e dispensa por localização confirmada |
+| Build elegível com stdout potencialmente grande | Wrapper Pruner; passthrough abaixo do limiar não é poda |
+| Diff elegível, suíte lenta e framework suportado | Test Filter durante iteração; checks finais completos |
+| Fluxo web isolado com CLI Browser disponível | CLI oficial com assert/readback; sem trocar perfil pessoal |
+| Falha de API sem mudança de entrada/runtime | Registrar erro, fallback e continuar; não insistir na mesma falha |
+| Falta de regras/dataset/autorização | Dispensa concreta; não fabricar pré-requisitos nem exportar dados |
+| Ferramenta executada sem baseline equivalente | Uso comprovado; ganho desconhecido |
+
+Revisão documental dos cenários não comprova obediência de um agente. A próxima
+tarefa local precisa demonstrar chamada efetiva ou dispensa compatível no recibo.
