@@ -136,3 +136,13 @@ corpo das skills vinculadas à fonte local; sessões já abertas podem manter co
 Jeval também fica no [My Tools](https://github.com/gabrielcamarate/my-tools): CLI offline e seis skills oficiais vinculadas à fonte upstream. `gabriel-verification-planning` e `gabriel-loop-engineering` orientam avaliação de decisões rotuladas. Não copiamos as skills do fornecedor para este catálogo de 23 procedimentos nem habilitamos coleta automática.
 
 O [lote de dez ferramentas My Tools](https://github.com/gabrielcamarate/my-tools/blob/main/docs/reviewed-tools.md) tem gatilhos de uso obrigatório em auditoria, verificação, ciclos, arquitetura, documentos e linguagem. As sete skills oficiais desse lote ficam vinculadas à fonte upstream, fora deste catálogo de 23 procedimentos. Não há coleta automática nem obrigação de chamar todas.
+
+### Correção da adoção local
+
+Os guias de ferramentas usam `references/tool-routing.md` dentro de cada skill,
+com link para a documentação canônica. Isso funciona também através dos links
+Codex/Claude. O validador permite somente esse destino compartilhado interno.
+O perfil pessoal de autorização do Pruner fica fora do repositório; consulte
+[roteamento](docs/tool-routing.md#perfil-local-e-autorização-do-pruner).
+Filtros Siftr seguem `fnmatch`, sem expansão de chaves. Smokes funcionais de UI
+usam a interface oficial Jev; suítes existentes continuam como gates do projeto.

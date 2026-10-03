@@ -43,8 +43,11 @@ def validate(root=ROOT):
         if "/home/" in text or "TODO" in text or "[INSERT" in text:
             raise ValueError(f"Nonportable path or unfinished scaffold: {name}")
         for link in re.findall(r"\]\((references/[^)]+)\)", parts[2]):
-            reference = (root / "skills" / name / link).resolve()
-            if not reference.is_relative_to((root / "skills" / name).resolve()) or not reference.is_file():
+            reference = (root / "skills" / name / link.split("#", 1)[0]).resolve()
+            shared = (root / "docs" / "tool-routing.md").resolve()
+            inside_skill = reference.is_relative_to((root / "skills" / name).resolve())
+            shared_link = link.split("#", 1)[0] == "references/tool-routing.md" and reference == shared and shared.is_relative_to(root.resolve())
+            if not (inside_skill or shared_link) or not reference.is_file():
                 raise ValueError(f"Missing or escaping reference: {name}/{link}")
         ui = (root / "skills" / name / "agents/openai.yaml").read_text()
         fields = dict(line.strip().split(":", 1) for line in ui.splitlines() if line.startswith("  "))

@@ -18,10 +18,16 @@ real do ambiente, sem afirmar que publicação no GitHub atualiza sessões abert
 | Fluxo funcional de navegador em sessão isolada | MCP `jev-playwright` ou CLI oficial `jev-browser`; ler `jev-browser-playwright` | Aba/perfil pessoal indicado, cenário sem suporte, runtime indisponível ou autorização faltante |
 | Avaliação de decisões probabilísticas com decisões e rótulos existentes | CLI `jeval ingest`/`report`, conforme skill upstream | Dados/rótulos ausentes ou sem autorização; não criar coleta/instrumentação |
 
-Siftr é a primeira busca semântica; símbolo/mensagem exatos usam `rg`. Uma pasta
-presumida não é localização confirmada. Não faça buscas exploratórias sucessivas
+Siftr é a primeira busca semântica; símbolo/mensagem exatos usam `rg`. Use uma pergunta por comportamento. `glob` nesta revisão usa Python fnmatch,
+sem expansão de chaves: `{ts,tsx}` exclui arquivos em vez de escolher extensões.
+Prefira raiz estreita sem glob, ou CLI `-g "*.ts" -g "*.tsx"`. Se a seleção estiver
+vazia por sintaxe de filtro, corrija uma vez; não registre isso como falha do modelo.
+Uma pasta presumida não é localização confirmada. Não faça buscas exploratórias sucessivas
 para evitar o gatilho. No navegador, seletores conhecidos usam comandos determinísticos
 da própria ferramenta; `browser_run` fica para metas que exigem descoberta semântica.
+Um script Playwright ad hoc não substitui essa chamada sem motivo concreto. Suites
+Playwright já versionadas, RED/GREEN e comparações de pixels são gates independentes;
+para o smoke funcional em fixture isolada, use a interface Jev e reutilize prova válida.
 QA visual continua exigindo pixels/viewport. Chrome pessoal preserva sua conexão e
 conta; não mover cookies/logins para sessão isolada.
 
@@ -128,3 +134,30 @@ uma avaliação equivalente. Hunch não repete a busca do Siftr nesta fase.
 Calibrate: `--provider openrouter`. Hunch: `--provider typesafe --no-fallback` usa o transporte OpenRouter adaptado, preservando o nome oficial. Regras/limiares precisam ser apropriados. Spec/Sentinel/Hunch são consultivos; não concedem merge, deploy, aprovação ou gasto. Sniff não reescreve texto nem comprova fatos; DocJev classifica páginas, não verifica alegações.
 
 Siftr continua a primeira rota de busca; Hunch entra para revisão ou alternativa justificada. Axi/Recipes/SemDecide servem contratos distintos: não analisar a mesma lista três vezes. Calibrate precisa de exemplos rotulados e holdout, sem mudar gates automaticamente. Em Cloud, confirmar CLI/runtime, binding e instruções; checkout sozinho não comprova instalação. Nenhuma coleta automática foi habilitada.
+
+## Perfil local e autorização do Pruner
+
+Autorização de processamento depende do operador, fora deste repositório público.
+No localhost de Gabriel, consultar a instrução pessoal carregada pelo Codex e, se
+necessário, o arquivo `~/.config/my-tools/usage-policy.json`, sem valores de secrets.
+O pedido de correção de 03/10/2026 estabelece o perfil para código, fixtures, logs
+e histórico comum de sessões técnicas de desenvolvimento autorizadas. Esse perfil
+abrange o histórico que o Pruner efetivamente envia, não somente stdout do comando.
+Não repetir confirmação por comando em uma sessão inteiramente elegível.
+
+Continuam excluídos: chaves, tokens, credenciais, registros de clientes/financeiros,
+logs privados operacionais, mensagens pessoais e sessões com tais conteúdos no
+histórico. Presença real desses dados exige dispensa do Pruner nesta sessão, mesmo
+se o comando atual for sintético. Não afirmar autorização ausente sem conferir o
+perfil e indicar a categoria concreta que impede uso. Não sanear ou substituir o
+histórico upstream silenciosamente. O perfil não autoriza produção, deploy, ações
+financeiras ou envio de dados de terceiros. Não transportar essa configuração
+pessoal pelo Git; Cloud precisa receber sua própria autorização e preparação.
+
+## Guias através dos links instalados
+
+As skills possuem `references/tool-routing.md`, um link interno para o guia único
+do repositório. Leia esse arquivo a partir da pasta da skill instalada; não tente
+`~/.agents/docs/tool-routing.md`. Outros links relativos de docs devem ser resolvidos
+a partir do caminho canônico de SKILL.md (`Path(path).resolve()`), não da pasta
+pessoal que contém o link. Não buscar todo o disco após um caminho relativo errado.

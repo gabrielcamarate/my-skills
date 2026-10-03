@@ -5,7 +5,7 @@ description: "Auditar um PR ou diff antes de integrar: confrontar alegações co
 
 # Auditoria de PR
 
-Fase experimental obrigatória: ao ocorrer um gatilho desta skill, execute a ferramenta oficial indicada antes de substituir pela rota habitual. Leia somente a linha pertinente do [roteamento](../../docs/tool-routing.md), que define gatilhos e dispensas. Ler a skill ou consultar `--help` não conta como uso. Registre chamada/resultado ou dispensa concreta no checkpoint existente e resuma isso na entrega; falha da ferramenta pede fallback, não abandono da tarefa.
+Fase experimental obrigatória: ao ocorrer um gatilho desta skill, execute a ferramenta oficial indicada antes de substituir pela rota habitual. Leia somente a linha pertinente do [roteamento](references/tool-routing.md), que define gatilhos e dispensas. Ler a skill ou consultar `--help` não conta como uso. Registre chamada/resultado ou dispensa concreta no checkpoint existente e resuma isso na entrega; falha da ferramenta pede fallback, não abandono da tarefa.
 
 Antes de afirmar contratos atuais, confirme base/SHA e leia instruções/guias na mesma revisão de trabalho; atualizar refs não atualiza um checkout antigo. Preserve trabalho dirty/ativo. Para contratos alterados, identifique os guias existentes, atualize-os no mesmo PR e registre paths/dispensas específicas; README/changelog não substituem documentação de domínio. Confronte texto com código/testes no candidato final e reutilize evidência válida.
 
@@ -25,4 +25,4 @@ Achados por gravidade com arquivo/linha, cenário, impacto e correção. Identif
 
 ## Ferramentas obrigatórias nos gatilhos deste escopo
 
-Com configuração existente de requisitos Markdown/rubricas afetados pelo diff, execute `jev-spec check --format json`. Com contratos OpenAPI antes/depois disponíveis, execute `jev-oas-sentinel compare`. Para revisão do diff contra regras explícitas existentes, execute `hunch check --provider typesafe --no-fallback`. Confira os trechos originais e reuse evidência válida do mesmo candidato; os pareceres não substituem auditoria nem autorizam integração. Veja [gatilhos e dispensas](../../docs/tool-routing.md#decisões-documentos-e-contratos).
+Com configuração existente de requisitos Markdown/rubricas afetados pelo diff, execute `jev-spec check --format json`. Com contratos OpenAPI antes/depois disponíveis, execute `jev-oas-sentinel compare`. Para revisão do diff contra regras explícitas existentes, execute `hunch check --provider typesafe --no-fallback`. Confira os trechos originais e reuse evidência válida do mesmo candidato; os pareceres não substituem auditoria nem autorizam integração. Veja [gatilhos e dispensas](references/tool-routing.md#decisões-documentos-e-contratos).

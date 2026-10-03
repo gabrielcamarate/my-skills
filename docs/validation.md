@@ -61,3 +61,16 @@ configuração de captura ou operação de produção foi feita nesta reorganiza
 - Nenhuma alteração de runtime, hooks, chave, gates ou coleta automática. Novas
   tarefas locais devem carregar os links atualizados; sessão antiga pode conservar
   contexto anterior. Publicação não comprova sincronização Cloud.
+
+## Correções de chamadores: 03/10/2026
+
+- Onze referências compartilhadas funcionam pelos links pessoais instalados.
+- Validação das 23 skills e 11 testes passaram. Quatro testes novos verificam
+  resolução do guia instalado e rejeição de destino ausente/externo.
+- Regras de glob Siftr, perfil local do Pruner e smoke Browser ajustadas.
+- Testes reais sintéticos no My Tools: Siftr encontrou credits.ts com 0,92;
+  Pruner reduziu stdout em 87,6% preservando diagnósticos/original; Browser CLI
+  confirmou valores exatos e uma submissão.
+- Perfil pessoal fora do Git. Engines upstream e gates existentes preservados.
+- Próxima tarefa deve confirmar seleção espontânea e benefício líquido; instruções
+  não comprovam sozinhas obediência, economia Codex ou atualização Cloud.

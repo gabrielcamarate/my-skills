@@ -7,7 +7,7 @@ description: "Executar correções de issues e PRs com decisão de auditoria apr
 
 Antes de afirmar contratos atuais, confirme base/SHA e leia instruções/guias na mesma revisão de trabalho; atualizar refs não atualiza um checkout antigo. Preserve trabalho dirty/ativo. Para contratos alterados, identifique os guias existentes, atualize-os no mesmo PR e registre paths/dispensas específicas; README/changelog não substituem documentação de domínio. Confronte texto com código/testes no candidato final e reutilize evidência válida.
 
-Fase experimental obrigatória: ao ocorrer um gatilho desta skill, execute a ferramenta oficial indicada antes de substituir pela rota habitual. Leia somente a linha pertinente do [roteamento](../../docs/tool-routing.md), que define gatilhos e dispensas. Ler a skill ou consultar `--help` não conta como uso. Registre chamada/resultado ou dispensa concreta no checkpoint existente e resuma isso na entrega; falha da ferramenta pede fallback, não abandono da tarefa.
+Fase experimental obrigatória: ao ocorrer um gatilho desta skill, execute a ferramenta oficial indicada antes de substituir pela rota habitual. Leia somente a linha pertinente do [roteamento](references/tool-routing.md), que define gatilhos e dispensas. Ler a skill ou consultar `--help` não conta como uso. Registre chamada/resultado ou dispensa concreta no checkpoint existente e resuma isso na entrega; falha da ferramenta pede fallback, não abandono da tarefa.
 
 Para implementação não trivial, siga o [feedback antecipado](../../docs/fast-feedback.md): pré-requisitos e integração real cedo, testes em execução única, reuso de CI válido e preflight documental do projeto antes de publicação. Preserve gates e autoridade.
 
@@ -24,7 +24,7 @@ Decisão de `gabriel-iss-audit` ou `gabriel-pr-audit` e autorização para execu
 7. Quando houver integração autorizada, verifique SHA resultante e checks de composição. Feche uma issue somente com autorização e critérios concluídos; se o aceite inclui produção ou carga real, código integrado não basta. Execute cleanup já autorizado pelo projeto, preservando trabalho alheio.
 
 ## Busca obrigatória com Siftr
-Antes da primeira busca, escolha pela evidência já disponível: com arquivo/trecho confirmado, leia diretamente; com símbolo ou mensagem exata, use `rg`; com apenas uma descrição do comportamento e sem localização confirmada, é obrigatório executar primeiro `semantic_search` do MCP Siftr ou a CLI oficial `siftr search` se o MCP não estiver exposto. Consulte a skill/documentação instalada para os argumentos; não use `my-tools search`. Uma pasta presumida não é localização confirmada. Não faça várias buscas locais para depois cumprir esta orientação; não repita descoberta quando o contexto já basta.
+Antes da primeira busca, escolha pela evidência já disponível: com arquivo/trecho confirmado, leia diretamente; com símbolo ou mensagem exata, use `rg`; com apenas uma descrição do comportamento e sem localização confirmada, é obrigatório executar primeiro `semantic_search` do MCP Siftr ou a CLI oficial `siftr search` se o MCP não estiver exposto. Consulte a skill/documentação instalada para os argumentos; não use `my-tools search`. Use uma pergunta por comportamento. Nesta revisão, glob usa `fnmatch`: não aceita `{ts,tsx}`; use raiz estreita sem glob ou, na CLI, `-g "*.ts" -g "*.tsx"`. Resultado vazio com filtro inválido não prova baixa confiança do modelo: corrija o filtro uma vez antes do fallback. Uma pasta presumida não é localização confirmada. Não faça várias buscas locais para depois cumprir esta orientação; não repita descoberta quando o contexto já basta.
 
 Use `focused_read` quando precisar de uma parte de arquivo grande, e `pick_relevant` para priorizar uma lista de testes ou arquivos, preservando os gates obrigatórios. `filter_output` é experimental e lê um arquivo de saída existente; use apenas logs sintéticos ou saneados e autorizados. Identifique o servidor Siftr se houver ferramentas homônimas.
 
@@ -40,7 +40,7 @@ Confirme o wrapper no caminho exato resolvido pela skill do plugin (`<plugin-roo
 
 Para builds, testes ou instalações não interativas que possam gerar logs extensos, consulte a skill do plugin `jev-pruner` antes de executar. É obrigatório executar o comando pelo wrapper original quando o plugin estiver disponível e histórico/saída estiverem autorizados para processamento externo; não executar diretamente apenas por hábito. Saída abaixo do limiar é passthrough válido, não falha nem poda. O My Tools configura OpenRouter com a mesma credencial do Siftr. Não exponha a chave nem a inclua no comando.
 
-Apenas stdout acima de 10 mil tokens estimados pode ser podado. Preserve workdir, argumentos, permissões, checks obrigatórios e critérios de aprovação. Não use para servidores/TTY, leitura de arquivos completos, diffs, dados estruturados ou conteúdo sensível; não aplique também `filter_output` do Siftr ao mesmo resultado. Se faltar runtime, histórico, chave ou rede, execute normalmente e registre a limitação.
+Apenas stdout acima de 10 mil tokens estimados pode ser podado. Preserve workdir, argumentos, permissões, checks obrigatórios e critérios de aprovação. Não use para servidores/TTY, leitura de arquivos completos, diffs, dados estruturados ou conteúdo sensível; não aplique também `filter_output` do Siftr ao mesmo resultado. O perfil local autorizado e seus limites são definidos no roteamento. Sessão técnica elegível não precisa de nova confirmação por comando; se o perfil estiver ausente ou o histórico contiver conteúdo excluído, registre a condição concreta. Se faltar runtime, histórico, chave ou rede, execute normalmente e registre a limitação.
 
 O wrapper mantém stderr/exit code e guarda o original no arquivo indicado pelo rodapé. Recupere-o quando faltar contexto. Só registre poda com marcador de omissão; menos texto não prova economia total nem um teste aprovado. Em Cloud, repositórios presentes não substituem instalação, credencial, rede e hook/histórico da sessão.
 
@@ -59,3 +59,12 @@ tracked/untracked/ignored, branches próprias e executores ativos. Conferir os S
 local/remoto e registrar resultado ou blocker/consumidor/ação no recibo existente.
 Fetch ou outro worktree atualizado não certificam o destino. Sem força/reset/stash/clean
 ou promoção de produção; coordenação e mensagens seguem a autorização disponível.
+
+## Verificação funcional de UI
+
+Ao validar UI com fixture/sessão isolada, carregue `gabriel-agent-browser` e use
+a CLI/MCP oficial Jev Browser para o smoke funcional autorizado. Não substituir
+por script Playwright ad hoc sem falha/dispensa concreta. Suites Playwright já
+versionadas e comparações de pixels continuam gates determinísticos: executá-las
+não comprova uso do Jev. Reuse smoke válido do mesmo candidato/estado; não duplique
+ações remotas ou gravações apenas para registrar uma chamada.

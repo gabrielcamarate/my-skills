@@ -7,7 +7,7 @@ description: "Investigar uma issue ou bug e decidir causa, viabilidade e menor c
 
 Antes de afirmar contratos atuais, confirme base/SHA e leia instruções/guias na mesma revisão de trabalho; atualizar refs não atualiza um checkout antigo. Preserve trabalho dirty/ativo. Para contratos alterados, identifique os guias existentes, atualize-os no mesmo PR e registre paths/dispensas específicas; README/changelog não substituem documentação de domínio. Confronte texto com código/testes no candidato final e reutilize evidência válida.
 
-Fase experimental obrigatória: ao ocorrer um gatilho desta skill, execute a ferramenta oficial indicada antes de substituir pela rota habitual. Leia somente a linha pertinente do [roteamento](../../docs/tool-routing.md), que define gatilhos e dispensas. Ler a skill ou consultar `--help` não conta como uso. Registre chamada/resultado ou dispensa concreta no checkpoint existente e resuma isso na entrega; falha da ferramenta pede fallback, não abandono da tarefa.
+Fase experimental obrigatória: ao ocorrer um gatilho desta skill, execute a ferramenta oficial indicada antes de substituir pela rota habitual. Leia somente a linha pertinente do [roteamento](references/tool-routing.md), que define gatilhos e dispensas. Ler a skill ou consultar `--help` não conta como uso. Registre chamada/resultado ou dispensa concreta no checkpoint existente e resuma isso na entrega; falha da ferramenta pede fallback, não abandono da tarefa.
 
 ## Resultado
 Separar o problema observado do diagnóstico sugerido pelo autor e produzir uma decisão executável. Esta etapa investiga; correção só começa quando já estiver autorizada.
@@ -22,7 +22,7 @@ Separar o problema observado do diagnóstico sugerido pelo autor e produzir uma 
 7. Para a correção aprovada, defina a causa, a menor mudança, comportamento preservado e prova de regressão. Encaminhe a execução para `gabriel-github-resolution` quando autorizada.
 
 ## Busca obrigatória com Siftr
-Antes da primeira busca, escolha pela evidência já disponível: com arquivo/trecho confirmado, leia diretamente; com símbolo ou mensagem exata, use `rg`; com apenas uma descrição do comportamento e sem localização confirmada, é obrigatório executar primeiro `semantic_search` do MCP Siftr ou a CLI oficial `siftr search` se o MCP não estiver exposto. Consulte a skill/documentação instalada para os argumentos; não use `my-tools search`. Uma pasta presumida não é localização confirmada. Não faça várias buscas locais para depois cumprir esta orientação; não repita descoberta quando o contexto já basta.
+Antes da primeira busca, escolha pela evidência já disponível: com arquivo/trecho confirmado, leia diretamente; com símbolo ou mensagem exata, use `rg`; com apenas uma descrição do comportamento e sem localização confirmada, é obrigatório executar primeiro `semantic_search` do MCP Siftr ou a CLI oficial `siftr search` se o MCP não estiver exposto. Consulte a skill/documentação instalada para os argumentos; não use `my-tools search`. Use uma pergunta por comportamento. Nesta revisão, glob usa `fnmatch`: não aceita `{ts,tsx}`; use raiz estreita sem glob ou, na CLI, `-g "*.ts" -g "*.tsx"`. Resultado vazio com filtro inválido não prova baixa confiança do modelo: corrija o filtro uma vez antes do fallback. Uma pasta presumida não é localização confirmada. Não faça várias buscas locais para depois cumprir esta orientação; não repita descoberta quando o contexto já basta.
 
 Use `focused_read` quando precisar de uma parte de arquivo grande, e `pick_relevant` para priorizar uma lista de testes ou arquivos, preservando os gates obrigatórios. `filter_output` é experimental e lê um arquivo de saída existente; use apenas logs sintéticos ou saneados e autorizados. Identifique o servidor Siftr se houver ferramentas homônimas.
 
@@ -35,4 +35,4 @@ Issue/revisão; evidência e limites; causa confirmada ou hipótese; decisão e 
 
 ## Ferramentas obrigatórias nos gatilhos deste escopo
 
-Logs extensos com padrões repetidos: use `tocsin triage` e confira linhas originais. Para classificar/ordenar uma lista textual em categorias explícitas, use `jev-axi`. Para revisar um diff contra regras já definidas, use `hunch check --provider typesafe --no-fallback`; não repita a busca do Siftr. Os gatilhos e dispensas constam no [roteamento](../../docs/tool-routing.md#decisões-documentos-e-contratos).
+Logs extensos com padrões repetidos: use `tocsin triage` e confira linhas originais. Para classificar/ordenar uma lista textual em categorias explícitas, use `jev-axi`. Para revisar um diff contra regras já definidas, use `hunch check --provider typesafe --no-fallback`; não repita a busca do Siftr. Os gatilhos e dispensas constam no [roteamento](references/tool-routing.md#decisões-documentos-e-contratos).
