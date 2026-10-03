@@ -17,3 +17,7 @@ Deixar o texto mais direto e legível, conservando conteúdo e intenção. Não 
 
 ## Entrega
 Texto editado; explicação breve só para mudanças materiais ou quando pedida. Se houver dúvida factual, sinalize ou encaminhe a `gabriel-fact-check`; não transforme edição de estilo em validação factual implícita.
+
+## Ferramentas opcionais para este escopo
+
+Para rascunhos extensos com regras adequadas ao idioma, avaliar a skill oficial `snifftest` e CLI antes da revisão editorial. Conferir cada alerta; o piloto sintético comprovou transporte, não precisão em português. Consulte [roteamento](../../docs/tool-routing.md#decisões-documentos-e-contratos) e o perfil OpenRouter do My Tools. Confirmar disponibilidade nesta sessão e preservar autorização dos dados/gates do projeto.

@@ -28,3 +28,7 @@ Se o MCP estiver ausente, falhar ou trouxer evidência insuficiente, use `rg` e 
 
 ## Entrega
 Proposta ou mudança escolhida, alternativas rejeitadas com motivo, contrato, caminho de migração e validação. Registre decisão durável somente na fonte e dentro da autorização apropriadas; não escreva em memória por consequência desta skill.
+
+## Ferramentas opcionais para este escopo
+
+Ao projetar decisões probabilísticas repetitivas em JS/TS, consultar a skill oficial `jev-recipes` e descobrir apenas a receita adequada com `jev-recipes describe`. Validar contrato/falhas/limiares; a CLI instalada não adiciona dependências a cada projeto. Consulte [roteamento](../../docs/tool-routing.md#decisões-documentos-e-contratos) e o perfil OpenRouter do My Tools. Confirmar disponibilidade nesta sessão e preservar autorização dos dados/gates do projeto.

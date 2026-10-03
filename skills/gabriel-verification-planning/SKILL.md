@@ -42,16 +42,12 @@ Use somente diff e definições de testes autorizados para envio ao OpenRouter. 
 
 Para fluxos funcionais de navegador em sessões Playwright isoladas, consulte `jev-browser-playwright` quando o MCP `jev-playwright` estiver disponível. Planeje uma meta limitada com `browser_run`, seguida do assert determinístico pertinente e da checagem persistida quando exigida. Se os alvos forem conhecidos, comandos nativos evitam inferência e sua latência. `complete` depende de evidência: confira `verification.readback`, `unobserved` e efeitos; nunca repita gravação `unknown` sem reconciliação. Avaliação visual requer imagem/renderização, não apenas DOM ou julgamento Jev. Preserve gates do projeto, autorização de dados/ações e fallback para a ferramenta já disponível. A skill upstream permanece na instalação My Tools.
 
-## Evidência de conclusão com Canny
-
-Aplique a [verificação proporcional](../../docs/tool-routing.md#canny-e-proporcionalidade-da-verificação): sugestão de comando do hook não exige suíte completa. Geradores de SVG/PDF precisam de execução e inspeção dos artefatos; código da aplicação mantém testes/gates próprios. Nunca escolha um check irrelevante só para liberar a conclusão.
-
-Quando o projeto já tiver hooks do Canny ativos e confiados no cliente, use `canny status` para conferir edições e checks registrados e `canny replay` para reproduzir as decisões. O hook supervisiona a sessão automaticamente; chamar status não ativa a supervisão. Sem sessões/eventos, registre a ausência e siga a verificação normal, sem instalar hooks globalmente ou configurar projetos por efeito colateral.
-
-Canny usa a mesma chave OpenRouter do My Tools. A instalação e o opt-in local são descritos em `my-tools/docs/canny.md`: CLI oficial `canny init --codex` e revisão em `/hooks`. Não enfraqueça configuração com `canny trust` nem mude o modo de bloqueio apenas para concluir. Um check passando não substitui os critérios, gates finais, revisão ou aceitação operacional. O modo padrão pode liberar uma segunda conclusão com aviso; crashes do hook liberam a execução. Mensagens/diffs/regras podem ir ao provedor e ao cache local: preserve autorização de dados. Em Cloud sem hooks do host, não há supervisão automática.
-
 ## Confiabilidade de decisões com Jeval
 
 Quando a tarefa envolver avaliar um classificador probabilístico ou uma ferramenta Jev e houver decisões e rótulos autorizados, consulte `jeval-calibration-audit` e, para custos/limiares, `jeval-threshold-from-costs`. Use a CLI gerenciada já instalada: `jeval ingest decisions.jsonl --root /caminho/avaliacao` e `jeval report --root /caminho/avaliacao`. Para logs `jev-native`, ingestão e aplicação dos rótulos são comandos separados conforme a skill/documentação. As seis skills upstream permanecem no My Tools; não rodar curl/main ou outro instalador sobre essa instalação.
 
 Jeval é offline, não requer chave, MCP ou hooks. Avalia decisões produzidas pelas ferramentas que já usam a chave compartilhada OpenRouter. Não instrumentar serviços, coletar logs, mudar gates ou implantar limiares sem escopo próprio. Confirme rótulos gold, amostra, revisão/modelo/pergunta e intervalos; silver é concordância. Sem dados representativos ou runtime, registre a limitação e mantenha a verificação normal. Não atribua redução de tokens ou acurácia geral ao demo ou à instalação.
+
+## Ferramentas opcionais para este escopo
+
+Avaliar `jev-calibrate --provider openrouter` quando confiabilidade de uma decisão probabilística for o critério. `jev-spec` fornece sinais consultivos sobre requisitos explícitos. Mudanças de contratos OpenAPI permitem `jev-oas-sentinel`, mantendo os checks determinísticos e gates reais. Consulte [roteamento](../../docs/tool-routing.md#decisões-documentos-e-contratos) e o perfil OpenRouter do My Tools. Confirmar disponibilidade nesta sessão e preservar autorização dos dados/gates do projeto.

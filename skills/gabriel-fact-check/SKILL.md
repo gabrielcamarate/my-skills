@@ -15,3 +15,7 @@ description: "Verificar alegações factuais de um texto contra fontes primária
 
 ## Entrega
 Conclusão principal, correções materiais com fontes diretas, alegações sem evidência e versão corrigida quando solicitada. Mantenha opinião identificada e evite uma lista de “correto” que esconda os problemas relevantes.
+
+## Ferramentas opcionais para este escopo
+
+Para pacotes de documentos autorizados, `docjev` pode classificar categorias e sugerir intervalos de páginas. Isso ajuda localizar fontes, não verificar alegações. Conferir conteúdo/fronteiras antes de exportar ou usar documentos. Consulte [roteamento](../../docs/tool-routing.md#decisões-documentos-e-contratos) e o perfil OpenRouter do My Tools. Confirmar disponibilidade nesta sessão e preservar autorização dos dados/gates do projeto.

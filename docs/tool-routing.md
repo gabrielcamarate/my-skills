@@ -13,7 +13,6 @@ Instalação, disponibilidade, chamada executada e benefício medido são estado
 | stdout potencialmente extenso, não interativo | Skill `jev-pruner` e wrapper, se histórico inteiro e saída autorizados; exigir marcador antes de alegar poda |
 | Fluxo funcional em navegador isolado | Preferir `jev-playwright` ou CLI `jev-browser`; comandos nativos para alvos conhecidos, `browser_run` para metas adequadas |
 | Aba/perfil pessoal indicado pelo usuário | Preservar a conexão e conta existentes; não migrar cookies para navegador isolado |
-| Conferir evidência de uma sessão com hooks Canny já ativos | CLI `canny status` / `canny replay`; não substitui gates nem ativa hooks |
 | Medir confiança/erros de decisões probabilísticas rotuladas | CLI `jeval` e skill upstream `jeval-calibration-audit`; offline, sem hooks/MCP; não implanta políticas |
 | QA visual | Usar superfície que exponha pixels e viewport necessária; Jev screen quando disponível, ou CUA/capacidade visual adequada |
 
@@ -70,19 +69,24 @@ valores. Sem fonte, delimitar a lacuna; não exportar secrets de CI, contornar M
 rotacionar fatores ou copiar credenciais para cada checkout por conta própria.
 
 
-## Canny e proporcionalidade da verificação
 
-O comando sugerido pelo hook é uma pista da pasta, não uma exigência de suíte
-completa. Identificar os arquivos realmente alterados e os critérios de aceite.
-Para SVG/PDF/planta, executar o gerador, conferir exportação, abrir os artefatos e
-validar conteúdo, medidas e preservação do desenho; testes da aplicação não provam
-esses critérios. Compilação de Python sozinha não comprova renderização correta.
-Se a aplicação também mudou, manter seus testes afetados e gates finais.
+## Decisões, documentos e contratos
 
-Se o hook pedir um check irrelevante, registrar o escopo e a evidência pertinente;
-não rodar uma suíte ampla apenas para liberar a mensagem, nem alegar PASS inexistente.
-Exceções nativas exigem autorização explícita, paths estreitos revisados e testes de
-não regressão: código de aplicação sem check ainda deve bloquear. Não ignorar todo
-`backups/`, todas as extensões Python ou todos os scripts; não substituir os padrões
-`verify` por um comando trivial. Cada checkout precisa de configuração/confiança
-próprias; instalação global do hook não torna uma configuração de projeto global.
+Usar o perfil OpenRouter do [My Tools](https://github.com/gabrielcamarate/my-tools/blob/main/docs/reviewed-tools.md), com chave compartilhada fora do repositório. Não usar instaladores flutuantes das skills nem criar chaves por projeto.
+
+| Ferramenta | Necessidade |
+|---|---|
+| `jev-calibrate` | Avalia perguntas e limiares com exemplos rotulados |
+| `jev-axi` | Classifica e ordena decisões em lote |
+| `jev-recipes` | 248 decisões tipadas para automações e aplicações |
+| `tocsin` | Agrupa e prioriza padrões de logs |
+| `docjev` | Classifica documentos e separa páginas |
+| `jev-spec` | Compara código com requisitos Markdown |
+| `jev-oas-sentinel` | Detecta riscos de incompatibilidade OpenAPI |
+| `hunch` | Busca comportamento e revisa diffs contra regras |
+| `snifftest` | Verifica texto contra regras de estilo |
+| `semdecide` | Classifica e filtra texto ou JSONL |
+
+Calibrate: `--provider openrouter`. Hunch: `--provider typesafe --no-fallback` usa o transporte OpenRouter adaptado, preservando o nome oficial. Regras/limiares precisam ser apropriados. Spec/Sentinel/Hunch são consultivos; não concedem merge, deploy, aprovação ou gasto. Sniff não reescreve texto nem comprova fatos; DocJev classifica páginas, não verifica alegações.
+
+Siftr continua a primeira rota de busca; Hunch entra para revisão ou alternativa justificada. Axi/Recipes/SemDecide servem contratos distintos: não analisar a mesma lista três vezes. Calibrate precisa de exemplos rotulados e holdout, sem mudar gates automaticamente. Em Cloud, confirmar CLI/runtime, binding e instruções; checkout sozinho não comprova instalação. Nenhuma coleta automática foi habilitada.

@@ -32,3 +32,7 @@ Se o MCP estiver ausente, falhar ou trouxer evidência insuficiente, use `rg` e 
 
 ## Entrega
 Issue/revisão; evidência e limites; causa confirmada ou hipótese; decisão e justificativa; mudança proposta; validação; próximo passo. Uma resposta para o autor pode ser preparada como rascunho, mas publicação e fechamento dependem da autoridade existente. Aceite operacional pendente impede afirmar conclusão quando faz parte do ticket.
+
+## Ferramentas opcionais para este escopo
+
+Logs grandes e repetitivos: avaliar `tocsin`, recuperando linhas originais dos padrões relevantes. `jev-axi` ajuda na triagem delimitada. `hunch` serve revisão por regras ou busca alternativa justificada; evitar repetir Siftr. Consulte [roteamento](../../docs/tool-routing.md#decisões-documentos-e-contratos) e o perfil OpenRouter do My Tools. Confirmar disponibilidade nesta sessão e preservar autorização dos dados/gates do projeto.

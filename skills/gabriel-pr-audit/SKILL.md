@@ -20,3 +20,7 @@ Um parecer sobre uma revisão imutável, com achados acionáveis. Revisar não s
 
 ## Entrega
 Achados por gravidade com arquivo/linha, cenário, impacto e correção. Identifique base/head, alegações verificadas, comandos/resultados, checks hospedados e limitações. Conclua aprovar, ajustar ou bloquear; ausência de achados não significa ausência de risco. Encaminhe ajustes autorizados para `gabriel-github-resolution`.
+
+## Ferramentas opcionais para este escopo
+
+Com requisitos Markdown/rubricas, considerar `jev-spec`; contratos OpenAPI antes/depois permitem `jev-oas-sentinel`. `hunch check --provider typesafe --no-fallback` revisa diffs contra regras explícitas. Conferir trechos originais: parecer probabilístico não substitui auditoria nem autoriza integração. Consulte [roteamento](../../docs/tool-routing.md#decisões-documentos-e-contratos) e o perfil OpenRouter do My Tools. Confirmar disponibilidade nesta sessão e preservar autorização dos dados/gates do projeto.
