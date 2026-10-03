@@ -9,6 +9,8 @@ Antes de afirmar contratos atuais, confirme base/SHA e leia instruções/guias n
 
 Antes de uma operação elegível, siga a [escolha de ferramentas](../../docs/tool-routing.md); registre no checkpoint existente a interface usada ou o motivo concreto do fallback.
 
+Para implementação não trivial, siga o [feedback antecipado](../../docs/fast-feedback.md): pré-requisitos e integração real cedo, testes em execução única, reuso de CI válido e preflight documental do projeto antes de publicação. Preserve gates e autoridade.
+
 ## Objetivo
 Transformar uma alegação de entrega em evidência observável com custo proporcional. Não é uma suite universal de testes.
 
