@@ -41,3 +41,9 @@ Use somente diff e definições de testes autorizados para envio ao OpenRouter. 
 ## Evidência funcional com Jev Browser
 
 Para fluxos funcionais de navegador em sessões Playwright isoladas, consulte `jev-browser-playwright` quando o MCP `jev-playwright` estiver disponível. Planeje uma meta limitada com `browser_run`, seguida do assert determinístico pertinente e da checagem persistida quando exigida. Se os alvos forem conhecidos, comandos nativos evitam inferência e sua latência. `complete` depende de evidência: confira `verification.readback`, `unobserved` e efeitos; nunca repita gravação `unknown` sem reconciliação. Avaliação visual requer imagem/renderização, não apenas DOM ou julgamento Jev. Preserve gates do projeto, autorização de dados/ações e fallback para a ferramenta já disponível. A skill upstream permanece na instalação My Tools.
+
+## Evidência de conclusão com Canny
+
+Quando o projeto já tiver hooks do Canny ativos e confiados no cliente, use `canny status` para conferir edições e checks registrados e `canny replay` para reproduzir as decisões. O hook supervisiona a sessão automaticamente; chamar status não ativa a supervisão. Sem sessões/eventos, registre a ausência e siga a verificação normal, sem instalar hooks globalmente ou configurar projetos por efeito colateral.
+
+Canny usa a mesma chave OpenRouter do My Tools. A instalação e o opt-in local são descritos em `my-tools/docs/canny.md`: CLI oficial `canny init --codex` e revisão em `/hooks`. Não enfraqueça configuração com `canny trust` nem mude o modo de bloqueio apenas para concluir. Um check passando não substitui os critérios, gates finais, revisão ou aceitação operacional. O modo padrão pode liberar uma segunda conclusão com aviso; crashes do hook liberam a execução. Mensagens/diffs/regras podem ir ao provedor e ao cache local: preserve autorização de dados. Em Cloud sem hooks do host, não há supervisão automática.

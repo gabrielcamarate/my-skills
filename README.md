@@ -128,3 +128,5 @@ O Chrome pessoal mantém sua própria conexão Jev Browser Control. Veja o
 A escolha deve ser observável: nas operações elegíveis, o agente registra no checkpoint
 existente a interface usada ou o motivo do fallback. Consulte o [roteamento](docs/tool-routing.md).
 Instalar uma ferramenta não obriga inferência em toda tarefa nem amplia autorização de dados.
+
+Canny é gerenciado pelo My Tools e mencionado em resolução, verificação e ciclos de implementação. Não tem skill upstream nesta revisão: usamos sua CLI e hooks oficiais, sem criar outra skill pessoal. Exige opt-in/confiança no cliente local; a CLI no Cloud não supervisiona uma conversa cujo host não oferece hooks.

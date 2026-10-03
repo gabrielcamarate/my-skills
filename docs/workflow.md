@@ -126,3 +126,7 @@ A descoberta de ferramentas verifica o entrypoint exato, inclusive arquivos igno
 como `dist/`; listagem vazia não prova ausência. A decisão por tipo de operação fica
 no checkpoint existente, com interface usada ou motivo concreto do fallback. Na
 retomada, reaproveitar a descoberta válida. Consulte [tool-routing](tool-routing.md).
+
+## Canny como evidência complementar
+
+Quando os hooks estiverem ativos no projeto e confiados no cliente, o Canny registra edições, checks e decisões de conclusão. `canny status` e `canny replay` ajudam a conferir o registro. Preservar os critérios reais: Canny aceita um check reconhecido após edição, não prova toda a issue, e seu modo padrão pode liberar outra tentativa com aviso. A instalação fica no My Tools; não há nova skill upstream. Cloud sem hooks do host mantém a verificação explícita normal.

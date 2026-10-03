@@ -13,6 +13,7 @@ Instalação, disponibilidade, chamada executada e benefício medido são estado
 | stdout potencialmente extenso, não interativo | Skill `jev-pruner` e wrapper, se histórico inteiro e saída autorizados; exigir marcador antes de alegar poda |
 | Fluxo funcional em navegador isolado | Preferir `jev-playwright` ou CLI `jev-browser`; comandos nativos para alvos conhecidos, `browser_run` para metas adequadas |
 | Aba/perfil pessoal indicado pelo usuário | Preservar a conexão e conta existentes; não migrar cookies para navegador isolado |
+| Conferir evidência de uma sessão com hooks Canny já ativos | CLI `canny status` / `canny replay`; não substitui gates nem ativa hooks |
 | QA visual | Usar superfície que exponha pixels e viewport necessária; Jev screen quando disponível, ou CUA/capacidade visual adequada |
 
 Fallback: capacidade ausente/falhou, cenário incompatível, dados não autorizados ou rota

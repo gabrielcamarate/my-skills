@@ -57,3 +57,9 @@ tracked/untracked/ignored, branches próprias e executores ativos. Conferir os S
 local/remoto e registrar resultado ou blocker/consumidor/ação no recibo existente.
 Fetch ou outro worktree atualizado não certificam o destino. Sem força/reset/stash/clean
 ou promoção de produção; coordenação e mensagens seguem a autorização disponível.
+
+## Evidência de conclusão com Canny
+
+Quando o projeto já tiver hooks do Canny ativos e confiados no cliente, use `canny status` para conferir edições e checks registrados e `canny replay` para reproduzir as decisões. O hook supervisiona a sessão automaticamente; chamar status não ativa a supervisão. Sem sessões/eventos, registre a ausência e siga a verificação normal, sem instalar hooks globalmente ou configurar projetos por efeito colateral.
+
+Canny usa a mesma chave OpenRouter do My Tools. A instalação e o opt-in local são descritos em `my-tools/docs/canny.md`: CLI oficial `canny init --codex` e revisão em `/hooks`. Não enfraqueça configuração com `canny trust` nem mude o modo de bloqueio apenas para concluir. Um check passando não substitui os critérios, gates finais, revisão ou aceitação operacional. O modo padrão pode liberar uma segunda conclusão com aviso; crashes do hook liberam a execução. Mensagens/diffs/regras podem ir ao provedor e ao cache local: preserve autorização de dados. Em Cloud sem hooks do host, não há supervisão automática.
