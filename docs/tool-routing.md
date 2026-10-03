@@ -68,3 +68,21 @@ Procurar somente os locators documentados, conferir política de captura e carre
 segredos somente em memória autorizada. Registrar presença/validação/bloqueio sem
 valores. Sem fonte, delimitar a lacuna; não exportar secrets de CI, contornar MFA,
 rotacionar fatores ou copiar credenciais para cada checkout por conta própria.
+
+
+## Canny e proporcionalidade da verificação
+
+O comando sugerido pelo hook é uma pista da pasta, não uma exigência de suíte
+completa. Identificar os arquivos realmente alterados e os critérios de aceite.
+Para SVG/PDF/planta, executar o gerador, conferir exportação, abrir os artefatos e
+validar conteúdo, medidas e preservação do desenho; testes da aplicação não provam
+esses critérios. Compilação de Python sozinha não comprova renderização correta.
+Se a aplicação também mudou, manter seus testes afetados e gates finais.
+
+Se o hook pedir um check irrelevante, registrar o escopo e a evidência pertinente;
+não rodar uma suíte ampla apenas para liberar a mensagem, nem alegar PASS inexistente.
+Exceções nativas exigem autorização explícita, paths estreitos revisados e testes de
+não regressão: código de aplicação sem check ainda deve bloquear. Não ignorar todo
+`backups/`, todas as extensões Python ou todos os scripts; não substituir os padrões
+`verify` por um comando trivial. Cada checkout precisa de configuração/confiança
+próprias; instalação global do hook não torna uma configuração de projeto global.

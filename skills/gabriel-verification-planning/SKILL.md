@@ -44,6 +44,8 @@ Para fluxos funcionais de navegador em sessões Playwright isoladas, consulte `j
 
 ## Evidência de conclusão com Canny
 
+Aplique a [verificação proporcional](../../docs/tool-routing.md#canny-e-proporcionalidade-da-verificação): sugestão de comando do hook não exige suíte completa. Geradores de SVG/PDF precisam de execução e inspeção dos artefatos; código da aplicação mantém testes/gates próprios. Nunca escolha um check irrelevante só para liberar a conclusão.
+
 Quando o projeto já tiver hooks do Canny ativos e confiados no cliente, use `canny status` para conferir edições e checks registrados e `canny replay` para reproduzir as decisões. O hook supervisiona a sessão automaticamente; chamar status não ativa a supervisão. Sem sessões/eventos, registre a ausência e siga a verificação normal, sem instalar hooks globalmente ou configurar projetos por efeito colateral.
 
 Canny usa a mesma chave OpenRouter do My Tools. A instalação e o opt-in local são descritos em `my-tools/docs/canny.md`: CLI oficial `canny init --codex` e revisão em `/hooks`. Não enfraqueça configuração com `canny trust` nem mude o modo de bloqueio apenas para concluir. Um check passando não substitui os critérios, gates finais, revisão ou aceitação operacional. O modo padrão pode liberar uma segunda conclusão com aviso; crashes do hook liberam a execução. Mensagens/diffs/regras podem ir ao provedor e ao cache local: preserve autorização de dados. Em Cloud sem hooks do host, não há supervisão automática.
