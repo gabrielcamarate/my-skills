@@ -5,7 +5,7 @@ description: "Criar ou atualizar um mapa arquitetural de um repositório quando 
 
 # Mapa do repositório
 
-Fase experimental obrigatória: ao ocorrer um gatilho desta skill, execute a ferramenta oficial indicada antes de substituir pela rota habitual. Leia somente a linha pertinente do [roteamento](../../docs/tool-routing.md), que define gatilhos e dispensas. Ler a skill ou consultar `--help` não conta como uso. Registre chamada/resultado ou dispensa concreta no checkpoint existente e resuma isso na entrega; falha da ferramenta pede fallback, não abandono da tarefa.
+Fase experimental obrigatória: ao ocorrer um gatilho desta skill, execute a ferramenta oficial indicada antes de substituir pela rota habitual. Leia somente a linha pertinente do [roteamento](references/tool-routing.md), que define gatilhos e dispensas. Ler a skill ou consultar `--help` não conta como uso. Registre chamada/resultado ou dispensa concreta no checkpoint existente e resuma isso na entrega; falha da ferramenta pede fallback, não abandono da tarefa.
 
 ## Objetivo
 Produzir um atlas de responsabilidades e fluxos, não uma listagem de arquivos. Não ativar para localizar uma função ou fazer uma edição pequena.
@@ -18,7 +18,7 @@ Produzir um atlas de responsabilidades e fluxos, não uma listagem de arquivos. 
 6. Faça links relativos navegáveis. Inclua rota no AGENTS/CLAUDE somente quando a mudança dessas instruções está dentro do escopo, mantendo a paridade que o projeto exigir.
 
 ## Busca obrigatória com Siftr
-Antes da primeira busca, escolha pela evidência já disponível: com arquivo/trecho confirmado, leia diretamente; com símbolo ou mensagem exata, use `rg`; com apenas uma descrição do comportamento e sem localização confirmada, é obrigatório executar primeiro `semantic_search` do MCP Siftr ou a CLI oficial `siftr search` se o MCP não estiver exposto. Consulte a skill/documentação instalada para os argumentos; não use `my-tools search`. Uma pasta presumida não é localização confirmada. Não faça várias buscas locais para depois cumprir esta orientação; não repita descoberta quando o contexto já basta.
+Antes da primeira busca, escolha pela evidência já disponível: com arquivo/trecho confirmado, leia diretamente; com símbolo ou mensagem exata, use `rg`; com apenas uma descrição do comportamento e sem localização confirmada, é obrigatório executar primeiro `semantic_search` do MCP Siftr ou a CLI oficial `siftr search` se o MCP não estiver exposto. Consulte a skill/documentação instalada para os argumentos; não use `my-tools search`. Use uma pergunta por comportamento. Nesta revisão, glob usa `fnmatch`: não aceita `{ts,tsx}`; use raiz estreita sem glob ou, na CLI, `-g "*.ts" -g "*.tsx"`. Resultado vazio com filtro inválido não prova baixa confiança do modelo: corrija o filtro uma vez antes do fallback. Uma pasta presumida não é localização confirmada. Não faça várias buscas locais para depois cumprir esta orientação; não repita descoberta quando o contexto já basta.
 
 Use `focused_read` quando precisar de uma parte de arquivo grande, e `pick_relevant` para priorizar uma lista de testes ou arquivos, preservando os gates obrigatórios. `filter_output` é experimental e lê um arquivo de saída existente; use apenas logs sintéticos ou saneados e autorizados. Identifique o servidor Siftr se houver ferramentas homônimas.
 

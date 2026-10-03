@@ -1,4 +1,5 @@
 import importlib.util
+import shutil
 import tempfile
 import unittest
 from pathlib import Path
@@ -95,6 +96,45 @@ class LinksTest(unittest.TestCase):
             ctl.migrate(rows, self.retired())
         self.assertTrue(all(r["status"] == "linked" for r in self.retired()))
         self.assertFalse(Path(rows[0]["link"]).is_symlink())
+
+
+class SharedReferencesTest(unittest.TestCase):
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp.cleanup)
+        self.root = Path(self.temp.name) / "repo"
+        shutil.copytree(ctl.ROOT, self.root, symlinks=True, ignore=shutil.ignore_patterns(".git", "__pycache__"))
+        self.ref = self.root / "skills/gabriel-agent-browser/references/tool-routing.md"
+
+    def test_shared_guide_resolves_through_installed_skill(self):
+        ctl.validate(self.root)
+        home = Path(self.temp.name) / "home"
+        ctl.install(ctl.plan(self.root, home, ["codex"]))
+        installed = home / ".agents/skills/gabriel-agent-browser/references/tool-routing.md"
+        self.assertEqual(installed.resolve(), self.root / "docs/tool-routing.md")
+        self.assertEqual(installed.read_bytes(), (self.root / "docs/tool-routing.md").read_bytes())
+
+    def test_missing_shared_guide_rejected(self):
+        (self.root / "docs/tool-routing.md").unlink()
+        with self.assertRaises(ValueError):
+            ctl.validate(self.root)
+
+    def test_external_reference_rejected(self):
+        external = Path(self.temp.name) / "external.md"
+        external.write_text("outside")
+        self.ref.unlink()
+        self.ref.symlink_to(external)
+        with self.assertRaises(ValueError):
+            ctl.validate(self.root)
+
+    def test_shared_document_itself_cannot_escape(self):
+        external = Path(self.temp.name) / "external.md"
+        external.write_text("outside")
+        shared = self.root / "docs/tool-routing.md"
+        shared.unlink()
+        shared.symlink_to(external)
+        with self.assertRaises(ValueError):
+            ctl.validate(self.root)
 
 
 if __name__ == "__main__":

@@ -5,7 +5,7 @@ description: "Interagir com uma interface de navegador e conferir seu estado ren
 
 # Automação de navegador
 
-Fase experimental obrigatória: ao ocorrer um gatilho desta skill, execute a ferramenta oficial indicada antes de substituir pela rota habitual. Leia somente a linha pertinente do [roteamento](../../docs/tool-routing.md), que define gatilhos e dispensas. Ler a skill ou consultar `--help` não conta como uso. Registre chamada/resultado ou dispensa concreta no checkpoint existente e resuma isso na entrega; falha da ferramenta pede fallback, não abandono da tarefa.
+Fase experimental obrigatória: ao ocorrer um gatilho desta skill, execute a ferramenta oficial indicada antes de substituir pela rota habitual. Leia somente a linha pertinente do [roteamento](references/tool-routing.md), que define gatilhos e dispensas. Ler a skill ou consultar `--help` não conta como uso. Registre chamada/resultado ou dispensa concreta no checkpoint existente e resuma isso na entrega; falha da ferramenta pede fallback, não abandono da tarefa.
 
 ## Objetivo
 Operar uma interface a partir de estado observado e verificar o efeito real. Para dados acessíveis por API/conector confiável, prefira essa rota quando adequada; esta skill é para interação de UI.
@@ -22,7 +22,7 @@ Ação e resultado observados, URL/estado não sensíveis, evidência visual qua
 
 ## Jev Browser em sessões Playwright isoladas
 
-Para automação funcional/E2E de aplicações e fluxos de navegador autorizados, use obrigatoriamente o MCP `jev-playwright` quando disponível no ambiente, ou a CLI oficial `jev-browser` quando o MCP não estiver exposto e leia a skill upstream `jev-browser-playwright`. Use as ferramentas oficiais `browser_goto`, `browser_run`, `browser_assert` e `browser_close`; uma meta completa com `instruction` e `values` pode reduzir decisões intermediárias do agente. A CLI oficial `jev-browser` é alternativa se o cliente não disponibilizar MCP. Quando o caminho e os seletores forem conhecidos, prefira operações nativas determinísticas: o modelo acrescenta latência.
+Para automação funcional/E2E de aplicações e fluxos de navegador autorizados, use obrigatoriamente o MCP `jev-playwright` quando disponível no ambiente, ou a CLI oficial `jev-browser` quando o MCP não estiver exposto e leia a skill upstream `jev-browser-playwright`. Use as ferramentas oficiais `browser_goto`, `browser_run`, `browser_assert` e `browser_close`; uma meta completa com `instruction` e `values` pode reduzir decisões intermediárias do agente. A CLI oficial `jev-browser` é alternativa se o cliente não disponibilizar MCP. Quando o caminho e os seletores forem conhecidos, use as operações determinísticas da própria CLI/MCP Jev Browser, não um script Playwright ad hoc como atalho. Suites Playwright versionadas e comparações de pixels permanecem gates independentes; para o smoke funcional da fixture, use a interface Jev uma vez e reutilize sua prova válida.
 
 No Chrome pessoal, preserve a conexão e a skill `jev-browser` do Jev Browser Control conforme as instruções do projeto. São ferramentas distintas. Não substitua o perfil pessoal por uma sessão headless nem transfira cookies/logins automaticamente. A instalação gerenciada inicia um navegador isolado e reutiliza a mesma `OPENROUTER_API_KEY`, sem cópia por projeto.
 

@@ -5,7 +5,7 @@ description: "Validar um artefato de release em ambiente limpo, usando o pacote 
 
 # Smoke do artefato de release
 
-Fase experimental obrigatória: ao ocorrer um gatilho desta skill, execute a ferramenta oficial indicada antes de substituir pela rota habitual. Leia somente a linha pertinente do [roteamento](../../docs/tool-routing.md), que define gatilhos e dispensas. Ler a skill ou consultar `--help` não conta como uso. Registre chamada/resultado ou dispensa concreta no checkpoint existente e resuma isso na entrega; falha da ferramenta pede fallback, não abandono da tarefa.
+Fase experimental obrigatória: ao ocorrer um gatilho desta skill, execute a ferramenta oficial indicada antes de substituir pela rota habitual. Leia somente a linha pertinente do [roteamento](references/tool-routing.md), que define gatilhos e dispensas. Ler a skill ou consultar `--help` não conta como uso. Registre chamada/resultado ou dispensa concreta no checkpoint existente e resuma isso na entrega; falha da ferramenta pede fallback, não abandono da tarefa.
 
 ## Objetivo
 Detectar arquivos ausentes, entrypoints quebrados, dependências indevidas do checkout e problemas de configuração no artefato que o consumidor recebe.
@@ -25,7 +25,7 @@ Confirme o wrapper no caminho exato resolvido pela skill do plugin (`<plugin-roo
 
 Para builds, testes ou instalações não interativas que possam gerar logs extensos, consulte a skill do plugin `jev-pruner` antes de executar. É obrigatório executar o comando pelo wrapper original quando o plugin estiver disponível e histórico/saída estiverem autorizados para processamento externo; não executar diretamente apenas por hábito. Saída abaixo do limiar é passthrough válido, não falha nem poda. O My Tools configura OpenRouter com a mesma credencial do Siftr. Não exponha a chave nem a inclua no comando.
 
-Apenas stdout acima de 10 mil tokens estimados pode ser podado. Preserve workdir, argumentos, permissões, checks obrigatórios e critérios de aprovação. Não use para servidores/TTY, leitura de arquivos completos, diffs, dados estruturados ou conteúdo sensível; não aplique também `filter_output` do Siftr ao mesmo resultado. Se faltar runtime, histórico, chave ou rede, execute normalmente e registre a limitação.
+Apenas stdout acima de 10 mil tokens estimados pode ser podado. Preserve workdir, argumentos, permissões, checks obrigatórios e critérios de aprovação. Não use para servidores/TTY, leitura de arquivos completos, diffs, dados estruturados ou conteúdo sensível; não aplique também `filter_output` do Siftr ao mesmo resultado. O perfil local autorizado e seus limites são definidos no roteamento. Sessão técnica elegível não precisa de nova confirmação por comando; se o perfil estiver ausente ou o histórico contiver conteúdo excluído, registre a condição concreta. Se faltar runtime, histórico, chave ou rede, execute normalmente e registre a limitação.
 
 O wrapper mantém stderr/exit code e guarda o original no arquivo indicado pelo rodapé. Recupere-o quando faltar contexto. Só registre poda com marcador de omissão; menos texto não prova economia total nem um teste aprovado. Em Cloud, repositórios presentes não substituem instalação, credencial, rede e hook/histórico da sessão.
 

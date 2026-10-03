@@ -5,7 +5,7 @@ description: "Definir e executar um ciclo limitado de tentativa, verificação e
 
 # Ciclo de execução e verificação
 
-Fase experimental obrigatória: ao ocorrer um gatilho desta skill, execute a ferramenta oficial indicada antes de substituir pela rota habitual. Leia somente a linha pertinente do [roteamento](../../docs/tool-routing.md), que define gatilhos e dispensas. Ler a skill ou consultar `--help` não conta como uso. Registre chamada/resultado ou dispensa concreta no checkpoint existente e resuma isso na entrega; falha da ferramenta pede fallback, não abandono da tarefa.
+Fase experimental obrigatória: ao ocorrer um gatilho desta skill, execute a ferramenta oficial indicada antes de substituir pela rota habitual. Leia somente a linha pertinente do [roteamento](references/tool-routing.md), que define gatilhos e dispensas. Ler a skill ou consultar `--help` não conta como uso. Registre chamada/resultado ou dispensa concreta no checkpoint existente e resuma isso na entrega; falha da ferramenta pede fallback, não abandono da tarefa.
 
 1. Extraia do pedido objetivo, critério observável, executor e verificador. Pergunte apenas pelo que realmente falta; não reinicie uma entrevista se as respostas estão no contexto.
 2. Defina sucesso por teste, build, comando, arquivo/artefato, observação ou revisão humana. Existência de arquivo só basta quando é o critério real; arquivo vazio não comprova comportamento. Registre comando/fonte e interpretação.
@@ -22,7 +22,7 @@ Confirme o wrapper no caminho exato resolvido pela skill do plugin (`<plugin-roo
 
 Para builds, testes ou instalações não interativas que possam gerar logs extensos, consulte a skill do plugin `jev-pruner` antes de executar. É obrigatório executar o comando pelo wrapper original quando o plugin estiver disponível e histórico/saída estiverem autorizados para processamento externo; não executar diretamente apenas por hábito. Saída abaixo do limiar é passthrough válido, não falha nem poda. O My Tools configura OpenRouter com a mesma credencial do Siftr. Não exponha a chave nem a inclua no comando.
 
-Apenas stdout acima de 10 mil tokens estimados pode ser podado. Preserve workdir, argumentos, permissões, checks obrigatórios e critérios de aprovação. Não use para servidores/TTY, leitura de arquivos completos, diffs, dados estruturados ou conteúdo sensível; não aplique também `filter_output` do Siftr ao mesmo resultado. Se faltar runtime, histórico, chave ou rede, execute normalmente e registre a limitação.
+Apenas stdout acima de 10 mil tokens estimados pode ser podado. Preserve workdir, argumentos, permissões, checks obrigatórios e critérios de aprovação. Não use para servidores/TTY, leitura de arquivos completos, diffs, dados estruturados ou conteúdo sensível; não aplique também `filter_output` do Siftr ao mesmo resultado. O perfil local autorizado e seus limites são definidos no roteamento. Sessão técnica elegível não precisa de nova confirmação por comando; se o perfil estiver ausente ou o histórico contiver conteúdo excluído, registre a condição concreta. Se faltar runtime, histórico, chave ou rede, execute normalmente e registre a limitação.
 
 O wrapper mantém stderr/exit code e guarda o original no arquivo indicado pelo rodapé. Recupere-o quando faltar contexto. Só registre poda com marcador de omissão; menos texto não prova economia total nem um teste aprovado. Em Cloud, repositórios presentes não substituem instalação, credencial, rede e hook/histórico da sessão.
 
@@ -40,4 +40,13 @@ Jeval é offline, não requer chave, MCP ou hooks. Avalia decisões produzidas p
 
 ## Ferramentas obrigatórias nos gatilhos deste escopo
 
-Em triagem textual em lote, use `jev-axi` para escolha/ranking ou `semdecide` para predicados/texto/JSONL; escolha uma interface pelo contrato, sem processar o mesmo lote duas vezes. Ao avaliar perguntas de decisão com exemplos rotulados disponíveis, use `jev-calibrate --provider openrouter`. Não coletar dados ou alterar políticas por consequência. Veja [gatilhos e dispensas](../../docs/tool-routing.md#decisões-documentos-e-contratos).
+Em triagem textual em lote, use `jev-axi` para escolha/ranking ou `semdecide` para predicados/texto/JSONL; escolha uma interface pelo contrato, sem processar o mesmo lote duas vezes. Ao avaliar perguntas de decisão com exemplos rotulados disponíveis, use `jev-calibrate --provider openrouter`. Não coletar dados ou alterar políticas por consequência. Veja [gatilhos e dispensas](references/tool-routing.md#decisões-documentos-e-contratos).
+
+## Verificação funcional de UI
+
+Ao validar UI com fixture/sessão isolada, carregue `gabriel-agent-browser` e use
+a CLI/MCP oficial Jev Browser para o smoke funcional autorizado. Não substituir
+por script Playwright ad hoc sem falha/dispensa concreta. Suites Playwright já
+versionadas e comparações de pixels continuam gates determinísticos: executá-las
+não comprova uso do Jev. Reuse smoke válido do mesmo candidato/estado; não duplique
+ações remotas ou gravações apenas para registrar uma chamada.
