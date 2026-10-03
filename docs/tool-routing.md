@@ -55,3 +55,14 @@ substituí-lo por seleção manual ou execução ampla. Se o critério já tem u
 pequeno e conhecido de testes, registrar essa escolha e executar diretamente.
 Gates finais continuam completos. Não exigir todas as ferramentas em toda tarefa,
 nem inventar uso, economia ou indisponibilidade para preencher o registro.
+
+
+## Pré-requisitos de autenticação
+
+Quando QA depender de identidade sintética/MFA, resolver a fonte no runbook do
+projeto durante o preflight inicial. Ausência no env da worktree não prova ausência
+no host; configuração de CI não fica automaticamente disponível localmente.
+Procurar somente os locators documentados, conferir política de captura e carregar
+segredos somente em memória autorizada. Registrar presença/validação/bloqueio sem
+valores. Sem fonte, delimitar a lacuna; não exportar secrets de CI, contornar MFA,
+rotacionar fatores ou copiar credenciais para cada checkout por conta própria.
