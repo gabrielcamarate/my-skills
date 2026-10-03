@@ -127,9 +127,12 @@ O Chrome pessoal mantém sua própria conexão Jev Browser Control. Veja o
 
 A escolha deve ser observável: nas operações elegíveis, o agente registra no checkpoint
 existente a interface usada ou o motivo do fallback. Consulte o [roteamento](docs/tool-routing.md).
-Instalar uma ferramenta não obriga inferência em toda tarefa nem amplia autorização de dados.
+Desde 03/10/2026, a fase experimental exige execução das ferramentas oficiais nos
+gatilhos compatíveis, com dispensa/fallback concreto e resumo na entrega. Não exige
+chamar todas em toda tarefa nem amplia autorização de dados. As regras chegam pelo
+corpo das skills vinculadas à fonte local; sessões já abertas podem manter contexto antigo.
 
 
 Jeval também fica no [My Tools](https://github.com/gabrielcamarate/my-tools): CLI offline e seis skills oficiais vinculadas à fonte upstream. `gabriel-verification-planning` e `gabriel-loop-engineering` orientam avaliação de decisões rotuladas. Não copiamos as skills do fornecedor para este catálogo de 23 procedimentos nem habilitamos coleta automática.
 
-O [lote de dez ferramentas My Tools](https://github.com/gabrielcamarate/my-tools/blob/main/docs/reviewed-tools.md) tem roteamento seletivo em auditoria, verificação, ciclos, arquitetura, documentos e linguagem. As sete skills oficiais desse lote ficam vinculadas à fonte upstream, fora deste catálogo de 23 procedimentos. Não há coleta automática nem obrigação de chamar todas.
+O [lote de dez ferramentas My Tools](https://github.com/gabrielcamarate/my-tools/blob/main/docs/reviewed-tools.md) tem gatilhos de uso obrigatório em auditoria, verificação, ciclos, arquitetura, documentos e linguagem. As sete skills oficiais desse lote ficam vinculadas à fonte upstream, fora deste catálogo de 23 procedimentos. Não há coleta automática nem obrigação de chamar todas.

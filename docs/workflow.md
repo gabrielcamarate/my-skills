@@ -83,7 +83,7 @@ a criar outra camada. Instalação é preparação; piloto real verifica comport
 
 Quatro procedimentos orientam o uso do Siftr: `gabriel-iss-audit`, `gabriel-github-resolution`, `gabriel-codemap` e `gabriel-improve-codebase-architecture`. Os outros 19 mantêm seus procedimentos. O agente chama `semantic_search`, `focused_read`, `pick_relevant` e, para saída autorizada, `filter_output` experimental pelo MCP oficial.
 
-O my-tools centraliza fonte, SHA aceito, instalação e troca do executável oficial. O MCP deve estar registrado no cliente e conectado na sessão. As skills orientam a escolha antes da primeira busca: localização confirmada → leitura; símbolo exato → rg; comportamento sem localização confirmada → semantic_search. Disponibilidade não garante seleção implícita em todo pedido.
+O my-tools centraliza fonte, SHA aceito, instalação e troca do executável oficial. O MCP deve estar registrado no cliente e conectado na sessão. As skills orientam a escolha antes da primeira busca: localização confirmada → leitura; símbolo exato → rg; comportamento sem localização confirmada → semantic_search. Nos gatilhos compatíveis, a chamada é obrigatória; ausência de MCP pede CLI oficial antes do fallback nativo.
 
 O MCP oficial não impõe isolamento nem allowlist por projeto. Caminhos/dados precisam ser autorizados em cada tarefa; ferramentas nativas não concedem autoridade para envio de conteúdo privado ou dispensam gates. Outro computador ou Cloud precisa de instalação, credencial e configuração próprias.
 
@@ -103,7 +103,8 @@ Pruner reduz stdout extenso elegível antes de o agente recebê-lo; não elimina
 
 ## Escolha observável das ferramentas
 
-Use [tool-routing](tool-routing.md) nas operações elegíveis. Registre a chamada ou o motivo do fallback no checkpoint existente, sem outra coleta/monitor. Disponibilidade não é uso comprovado. Claude precisa de suas próprias skills e interfaces; links do My Tools compartilham a fonte upstream, não os registros MCP dos clientes.
+Na fase experimental autorizada em 03/10/2026, execute as ferramentas de
+[tool-routing](tool-routing.md) nos gatilhos compatíveis, não apenas considere seu uso. Registre a chamada ou o motivo do fallback no checkpoint existente, sem outra coleta/monitor. Disponibilidade não é uso comprovado. Claude precisa de suas próprias skills e interfaces; links do My Tools compartilham a fonte upstream, não os registros MCP dos clientes.
 
 ## Código e documentação na mesma revisão
 
@@ -133,4 +134,12 @@ Quando houver decisões probabilísticas e rótulos autorizados, Jeval mede conf
 
 ## Ferramentas adicionais
 
-Consultar docs/tool-routing.md na primeira operação elegível e registrar rota/motivo no checkpoint existente. Preservar gates reais e autorização de dados. As novas integrações usam OpenRouter e CLIs oficiais; instalar não habilita supervisão de sessões, hooks Git ou coleta de benchmarks.
+Executar a rota obrigatória de docs/tool-routing.md na primeira operação elegível e registrar chamada/resultado ou dispensa concreta no checkpoint existente. Preservar gates reais e autorização de dados. As novas integrações usam OpenRouter e CLIs oficiais; instalar não habilita supervisão de sessões, hooks Git ou coleta de benchmarks.
+
+## Fase experimental de ferramentas: 03/10/2026
+
+Onze skills têm gatilhos obrigatórios, com fallback e resumo na entrega. É uma
+adaptação solicitada por Gabriel para avaliar uso real, não uma exigência atribuída
+à coleção Akita. Não cria novos hooks, interceptação global ou monitor. Slots sem
+entrada/configuração/dados autorizados são dispensados com motivo. Regras futuras
+serão ajustadas pela evidência de chamadas, falhas, omissões e retrabalho nas tarefas.

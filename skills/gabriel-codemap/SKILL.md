@@ -5,7 +5,7 @@ description: "Criar ou atualizar um mapa arquitetural de um repositório quando 
 
 # Mapa do repositório
 
-Antes de uma operação elegível, siga a [escolha de ferramentas](../../docs/tool-routing.md); registre no checkpoint existente a interface usada ou o motivo concreto do fallback.
+Fase experimental obrigatória: ao ocorrer um gatilho desta skill, execute a ferramenta oficial indicada antes de substituir pela rota habitual. Leia somente a linha pertinente do [roteamento](../../docs/tool-routing.md), que define gatilhos e dispensas. Ler a skill ou consultar `--help` não conta como uso. Registre chamada/resultado ou dispensa concreta no checkpoint existente e resuma isso na entrega; falha da ferramenta pede fallback, não abandono da tarefa.
 
 ## Objetivo
 Produzir um atlas de responsabilidades e fluxos, não uma listagem de arquivos. Não ativar para localizar uma função ou fazer uma edição pequena.
@@ -17,14 +17,14 @@ Produzir um atlas de responsabilidades e fluxos, não uma listagem de arquivos. 
 5. Salve o mapa no lugar de documentação já adotado quando a tarefa autoriza a escrita. Registre revisão, data, arquivos-base e modo de atualização. Se existem hashes/manifesto incremental, compare apenas entradas relevantes e preserve regiões sem mudança; git diff e identidade das entradas podem cumprir o mesmo papel sem um daemon.
 6. Faça links relativos navegáveis. Inclua rota no AGENTS/CLAUDE somente quando a mudança dessas instruções está dentro do escopo, mantendo a paridade que o projeto exigir.
 
-## Ferramentas oficiais do Siftr (MCP)
-Antes da primeira busca, escolha pela evidência já disponível: com arquivo/trecho confirmado, leia diretamente; com símbolo ou mensagem exata, use `rg`; com apenas uma descrição do comportamento e sem localização confirmada, use primeiro `semantic_search` do MCP Siftr. Uma pasta presumida não é localização confirmada. Não faça várias buscas locais para depois cumprir esta orientação; não repita descoberta quando o contexto já basta.
+## Busca obrigatória com Siftr
+Antes da primeira busca, escolha pela evidência já disponível: com arquivo/trecho confirmado, leia diretamente; com símbolo ou mensagem exata, use `rg`; com apenas uma descrição do comportamento e sem localização confirmada, é obrigatório executar primeiro `semantic_search` do MCP Siftr ou a CLI oficial `siftr search` se o MCP não estiver exposto. Consulte a skill/documentação instalada para os argumentos; não use `my-tools search`. Uma pasta presumida não é localização confirmada. Não faça várias buscas locais para depois cumprir esta orientação; não repita descoberta quando o contexto já basta.
 
 Use `focused_read` quando precisar de uma parte de arquivo grande, e `pick_relevant` para priorizar uma lista de testes ou arquivos, preservando os gates obrigatórios. `filter_output` é experimental e lê um arquivo de saída existente; use apenas logs sintéticos ou saneados e autorizados. Identifique o servidor Siftr se houver ferramentas homônimas.
 
 O MCP oficial precisa estar conectado na sessão e usa as ferramentas upstream sem proxy. Passe caminhos explícitos e filtros de código autorizados; nunca envie credenciais, dados financeiros/de clientes, documentos privados ou consultas sensíveis. O MCP não impõe isolamento ou allowlist por projeto. Não instale nem amplie permissões por conta própria.
 
-Se o MCP estiver ausente, falhar ou trouxer evidência insuficiente, use `rg` e leitura direta e relate o limite. Confira implementação e chamadores; ranking não prova comportamento nem ausência de código. Registre chamadas e resultado quando houver avaliação; economia exige comparação equivalente.
+Ausência de MCP não dispensa a ferramenta se a CLI oficial estiver disponível. Se nenhuma interface estiver utilizável, a chamada falhar ou os resultados forem insuficientes, registre a causa e use `rg` e leitura direta. Não faça retries sem mudança relevante. Confira implementação e chamadores; ranking não prova comportamento nem ausência de código. Registre chamadas e resultado quando houver avaliação; economia exige comparação equivalente.
 
 ## Entrega
 Atlas com entrada do sistema, mapa de diretórios por responsabilidade, fluxos, integrações, fontes e lacunas. Informe o que mudou na atualização e sua validade. Não crie agentes por pasta ou arquivos de estado do OpenCode em um runtime que não os usa.

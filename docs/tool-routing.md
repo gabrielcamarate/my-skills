@@ -1,27 +1,60 @@
-# Escolha das ferramentas instaladas
+# Uso experimental obrigatório das ferramentas instaladas
 
-Antes da primeira operação elegível, escolha pela necessidade e capacidades desta sessão.
-Não repita discovery a cada comando nem carregue todo o catálogo. Use o registro existente
-para anotar ferramenta/interface e resultado; em fallback elegível, anote um motivo concreto.
-Instalação, disponibilidade, chamada executada e benefício medido são estados distintos.
+Em 03/10/2026 Gabriel autorizou uma fase experimental: **execute a ferramenta oficial
+sempre que ocorrer um gatilho compatível abaixo**. Esta é uma regra de execução,
+não uma sugestão. Ler a skill, listar capacidades ou executar `--help` não comprova uso.
+A regra vale no localhost com as interfaces instaladas; no Cloud depende da preparação
+real do ambiente, sem afirmar que publicação no GitHub atualiza sessões abertas.
 
-| Necessidade | Rota |
-|---|---|
-| Arquivo já confirmado / identificador exato | Leitura direta / `rg`, sem inferência |
-| Comportamento sem localização confirmada | Siftr `semantic_search`, se conectado e envio autorizado |
-| Feedback de uma suíte lenta durante iteração | Skill upstream `jev-test-filter` e CLI; gates finais continuam completos |
-| stdout potencialmente extenso, não interativo | Skill `jev-pruner` e wrapper, se histórico inteiro e saída autorizados; exigir marcador antes de alegar poda |
-| Fluxo funcional em navegador isolado | Preferir `jev-playwright` ou CLI `jev-browser`; comandos nativos para alvos conhecidos, `browser_run` para metas adequadas |
-| Aba/perfil pessoal indicado pelo usuário | Preservar a conexão e conta existentes; não migrar cookies para navegador isolado |
-| Medir confiança/erros de decisões probabilísticas rotuladas | CLI `jeval` e skill upstream `jeval-calibration-audit`; offline, sem hooks/MCP; não implanta políticas |
-| QA visual | Usar superfície que exponha pixels e viewport necessária; Jev screen quando disponível, ou CUA/capacidade visual adequada |
+## Gatilhos e chamadas
 
-Fallback: capacidade ausente/falhou, cenário incompatível, dados não autorizados ou rota
-nativa mais adequada ao critério. Não trocar silenciosamente uma rota elegível por hábito,
-nem chamar o modelo apenas para demonstrar uso. Reconcilie mutação incerta antes de trocar
-ferramenta; preserve gates, ownership e cleanup. Não instale/configure clientes por efeito
-colateral. Sessões antigas podem manter um catálogo anterior: verificar disponibilidade
-real uma vez. Links locais não configuram automaticamente MCPs, plugins ou Cloud.
+| Gatilho observado | Operação obrigatória | Dispensa ou fallback concreto |
+|---|---|---|
+| Busca por comportamento sem arquivo, trecho ou símbolo confirmado | Siftr `semantic_search`; sem MCP exposto, `siftr search "COMPORTAMENTO" /caminho/autorizado --json --stats` | Localização ou símbolo exato já confirmado: leitura/`rg`; sem interface utilizável ou resultados insuficientes: registrar e buscar diretamente |
+| Necessidade de localizar trechos por comportamento dentro de arquivo grande | Siftr `focused_read`, se exposto | Intervalo/termo exato conhecido: leitura delimitada; interface ausente: leitura direta |
+| Priorizar lista de arquivos/testes pelo comportamento, sem seleção já conhecida | Siftr `pick_relevant`, se exposto | Seleção já determinada ou interface ausente; gates finais completos |
+| Build/teste/instalação não interativos com stdout potencialmente extenso | Wrapper oficial Pruner resolvido pela skill do plugin, antes de executar o comando | TTY/servidor, dados estruturados, leitura/diff, conteúdo ou histórico não autorizado, runtime/histórico/chave indisponível |
+| Feedback de iteração de suíte lenta, framework suportado e diff elegível | CLI `jev-test-filter --exec`, com runner/argumentos da skill upstream | Suíte rápida, testes exatos pequenos já definidos, gate final completo, framework incompatível/diff inadequado ou falha de seleção/API |
+| Fluxo funcional de navegador em sessão isolada | MCP `jev-playwright` ou CLI oficial `jev-browser`; ler `jev-browser-playwright` | Aba/perfil pessoal indicado, cenário sem suporte, runtime indisponível ou autorização faltante |
+| Avaliação de decisões probabilísticas com decisões e rótulos existentes | CLI `jeval ingest`/`report`, conforme skill upstream | Dados/rótulos ausentes ou sem autorização; não criar coleta/instrumentação |
+
+Siftr é a primeira busca semântica; símbolo/mensagem exatos usam `rg`. Uma pasta
+presumida não é localização confirmada. Não faça buscas exploratórias sucessivas
+para evitar o gatilho. No navegador, seletores conhecidos usam comandos determinísticos
+da própria ferramenta; `browser_run` fica para metas que exigem descoberta semântica.
+QA visual continua exigindo pixels/viewport. Chrome pessoal preserva sua conexão e
+conta; não mover cookies/logins para sessão isolada.
+
+Pruner: é obrigatório chamar o wrapper elegível; saída abaixo de 10 mil tokens pode
+passar integralmente, e isso é execução válida sem poda. Só alegar poda com marcador
+e original recuperável. Não aplicar também `filter_output` do Siftr ao mesmo resultado.
+Test Filter seleciona feedback durante iteração; não reduz os checks finais obrigatórios.
+
+## Exceções, falhas e evidência
+
+Uma dispensa precisa apontar uma condição da tabela ou um conflito real com instrução
+superior/projeto, autorização de dados/ações ou capacidade. "Prefiro rg", "considerei",
+"não parece necessário" e simples ausência de MCP com CLI disponível não bastam.
+Não invente um gatilho para chamar todas as ferramentas; não duplique operações nem
+repita uma avaliação cujo candidato/entradas/ambiente permaneçam válidos.
+
+Na primeira operação elegível, confirme a interface uma vez e execute. Falha de
+transporte/runtime/contrato: preserve erro sanitizado, registre e continue pela rota
+conservadora. Não repetir a mesma falha sem mudança relevante. Resultado incerto de
+mutação exige reconciliação somente leitura antes de qualquer reenvio/fallback.
+Não reinstalar, mudar hooks/gates, ampliar acesso nem criar outra chave por consequência.
+A obrigação não autoriza enviar código privado, conversas, segredos ou dados de clientes.
+
+Use o checkpoint/recibo existente para registrar por tipo de operação:
+`gatilho -> chamada/interface -> resultado ou falha -> fallback/dispensa e motivo`.
+Na entrega, inclua um resumo curto de ferramentas efetivamente usadas e dispensas
+relevantes; não enumere ferramentas sem relação com a tarefa. Distinguir instalação,
+chamada, resultado útil e benefício medido. Não fabricar custos/tokens ausentes.
+
+Quando houver baseline comparável, registrar tempo total, contexto/tokens com origem
+e unidade, omissões, recuperação e retrabalho. Sem baseline, declarar ganho desconhecido.
+Não repetir a tarefa inteira para produzir um benchmark nem ativar coleta automática.
+Ajustes futuros devem partir de erros concretos e preservar a primeira evidência.
 
 ## Descoberta verificável, uma vez por sessão
 
@@ -51,11 +84,9 @@ Exemplos de motivos específicos: símbolos confirmados para `rg`; poucos testes
 identificados e rápidos para seleção manual; gate final completo para suíte ampla;
 histórico privado não autorizado para Pruner. Capturar stdout em arquivo não é poda.
 
-Durante iteração de suíte lenta, avaliar explicitamente o Test Filter antes de
-substituí-lo por seleção manual ou execução ampla. Se o critério já tem um conjunto
-pequeno e conhecido de testes, registrar essa escolha e executar diretamente.
-Gates finais continuam completos. Não exigir todas as ferramentas em toda tarefa,
-nem inventar uso, economia ou indisponibilidade para preencher o registro.
+Durante iteração de suíte lenta com diff/framework elegíveis, execute o Test Filter
+antes de seleção manual ou execução ampla; use somente as dispensas da tabela.
+Gates finais continuam completos. Não inventar uso ou economia para preencher registro.
 
 
 ## Pré-requisitos de autenticação
@@ -74,18 +105,25 @@ rotacionar fatores ou copiar credenciais para cada checkout por conta própria.
 
 Usar o perfil OpenRouter do [My Tools](https://github.com/gabrielcamarate/my-tools/blob/main/docs/reviewed-tools.md), com chave compartilhada fora do repositório. Não usar instaladores flutuantes das skills nem criar chaves por projeto.
 
-| Ferramenta | Necessidade |
-|---|---|
-| `jev-calibrate` | Avalia perguntas e limiares com exemplos rotulados |
-| `jev-axi` | Classifica e ordena decisões em lote |
-| `jev-recipes` | 248 decisões tipadas para automações e aplicações |
-| `tocsin` | Agrupa e prioriza padrões de logs |
-| `docjev` | Classifica documentos e separa páginas |
-| `jev-spec` | Compara código com requisitos Markdown |
-| `jev-oas-sentinel` | Detecta riscos de incompatibilidade OpenAPI |
-| `hunch` | Busca comportamento e revisa diffs contra regras |
-| `snifftest` | Verifica texto contra regras de estilo |
-| `semdecide` | Classifica e filtra texto ou JSONL |
+| Ferramenta | Gatilho que exige uso | Operação oficial |
+|---|---|---|
+| `jev-calibrate` | Avaliar/desenhar perguntas ou limiares com exemplos rotulados e holdout já disponíveis | `jev-calibrate check --provider openrouter`, conforme dataset/skill |
+| `jev-axi` | Classificar/ordenar um lote textual com opções/critérios explícitos | `jev-axi pick/rank/triage`, conforme contrato |
+| `semdecide` | Aplicar predicado/score/filtro textual a lote ou JSONL com critério definido | CLI `semdecide`, conforme schema |
+| `jev-recipes` | Projetar componente de decisões repetitivas em JS/TS | `jev-recipes describe RECEITA`; `run` quando houver entrada válida e piloto autorizado |
+| `tocsin` | Triar logs extensos com padrões repetidos | `tocsin triage`; preservar linhas originais |
+| `docjev` | Classificar pacote documental em categorias existentes | `docjev classify`; split somente se separação fizer parte do escopo |
+| `jev-spec` | Mudança afeta requisitos Markdown/rubricas com configuração já existente | `jev-spec check --format json` |
+| `jev-oas-sentinel` | Comparar contratos OpenAPI disponíveis antes/depois de uma mudança | `jev-oas-sentinel compare --base BASE --head HEAD` |
+| `hunch` | Revisar diff contra regras explícitas já existentes | `hunch check --base BASE_CONFIRMADA --provider typesafe --no-fallback` |
+| `snifftest` | Revisar rascunho com vários parágrafos e regras existentes adequadas ao idioma | CLI `snifftest check`, conforme skill upstream |
+
+Ausência de entrada, categorias, configuração, regras, rótulos ou formato suportado é
+dispensa concreta; não criar tais pré-requisitos fora do escopo só para acionar a ferramenta.
+Axi e SemDecide são alternativas pelo contrato: escolha uma para o mesmo lote. Recipes
+é consulta de componentes, não terceira classificação do mesmo lote. Jeval analisa
+decisões registradas; Calibrate avalia perguntas em exemplos rotulados, sem duplicar
+uma avaliação equivalente. Hunch não repete a busca do Siftr nesta fase.
 
 Calibrate: `--provider openrouter`. Hunch: `--provider typesafe --no-fallback` usa o transporte OpenRouter adaptado, preservando o nome oficial. Regras/limiares precisam ser apropriados. Spec/Sentinel/Hunch são consultivos; não concedem merge, deploy, aprovação ou gasto. Sniff não reescreve texto nem comprova fatos; DocJev classifica páginas, não verifica alegações.
 
