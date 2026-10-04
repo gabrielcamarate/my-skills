@@ -30,6 +30,10 @@ def validate(root=ROOT):
     if (root / "AGENTS.md").read_bytes() != (root / "CLAUDE.md").read_bytes():
         raise ValueError("AGENTS.md and CLAUDE.md differ")
     for name in names:
+        routing = root / "skills" / name / "references/tool-routing.md"
+        shared = (root / "docs/tool-routing.md").resolve()
+        if not routing.is_symlink() or routing.resolve() != shared or not shared.is_file() or not shared.is_relative_to(root.resolve()):
+            raise ValueError(f"Missing or escaping mandatory tool routing: {name}")
         text = (root / "skills" / name / "SKILL.md").read_text()
         parts = text.split("---\n", 2)
         if len(parts) != 3 or parts[0] or not parts[2].strip():

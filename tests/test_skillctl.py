@@ -106,6 +106,22 @@ class SharedReferencesTest(unittest.TestCase):
         shutil.copytree(ctl.ROOT, self.root, symlinks=True, ignore=shutil.ignore_patterns(".git", "__pycache__"))
         self.ref = self.root / "skills/gabriel-agent-browser/references/tool-routing.md"
 
+    def test_every_installed_skill_can_read_the_canonical_routing(self):
+        home = Path(self.temp.name) / "home"
+        ctl.install(ctl.plan(self.root, home, ["codex", "claude"]))
+        for target in ctl.LOCATIONS:
+            for name in ctl.inventory(self.root):
+                with self.subTest(target=target, name=name):
+                    installed = home / ctl.LOCATIONS[target] / name / "references/tool-routing.md"
+                    self.assertEqual(installed.read_bytes(), (self.root / "docs/tool-routing.md").read_bytes())
+
+    def test_unreferenced_missing_routing_is_rejected(self):
+        ref = self.root / "skills/gabriel-reflect/references/tool-routing.md"
+        if ref.is_symlink() or ref.exists():
+            ref.unlink()
+        with self.assertRaises(ValueError):
+            ctl.validate(self.root)
+
     def test_shared_guide_resolves_through_installed_skill(self):
         ctl.validate(self.root)
         home = Path(self.temp.name) / "home"
