@@ -17,3 +17,14 @@ Transformar repetição custosa em uma melhoria pequena, sem construir novas reg
 
 ## Entrega
 Uma melhoria escolhida ou motivo para não mudar; antes/depois verificável; escopo alterado; evidência e limites. Conhecimento durável vai à fonte canônica autorizada; estado transitório continua no checkpoint.
+
+## Experimento de compactação Jev no Codex
+
+Quando a tarefa autorizar avaliar a espera pela compactação, consulte o laboratório
+`experiments/codex-jev/` do My Tools. Ele usa um fork fixado do motor, OpenRouter e
+HOME/CODEX_HOME separados; não é um hook ativo no Codex principal. Compare o mesmo
+binário com Jev ligado/desligado e confirme requisitos preservados, continuação e
+fallback. O modo de backend sintético verifica protocolo; somente o teste real
+pode medir a latência ChatGPT. Uma redução do helper não prova economia total.
+Não substitua o executável/configuração pessoal nem ative o launcher Desktop como
+efeito desta skill. Fora de uma avaliação autorizada, a compactação continua nativa.
