@@ -139,9 +139,9 @@ O [lote de dez ferramentas My Tools](https://github.com/gabrielcamarate/my-tools
 
 ### Correção da adoção local
 
-Os guias de ferramentas usam `references/tool-routing.md` dentro de cada skill,
-com link para a documentação canônica. Isso funciona também através dos links
-Codex/Claude. O validador permite somente esse destino compartilhado interno.
+Os guias usam `references/tool-routing.md` em cada skill, com link para a documentação
+canônica. O validador exige esse destino interno nas 23 skills, mesmo quando o corpo
+não o menciona. Os testes leem o guia pelos links instalados no Codex e no Claude.
 O perfil pessoal de autorização do Pruner fica fora do repositório; consulte
 [roteamento](docs/tool-routing.md#perfil-local-e-autorização-do-pruner).
 Filtros Siftr seguem `fnmatch`, sem expansão de chaves. Smokes funcionais de UI
