@@ -79,7 +79,11 @@ envolve comandos automaticamente: o agente precisa chamar o wrapper oficial.
 Distinguir `arquivo ausente`, `runtime ausente`, `histórico indisponível`,
 `dados não autorizados` e `comando inelegível`; não resumir tudo como indisponível.
 Se a descoberta anterior usou uma listagem filtrada, corrigir o checkpoint pela
-checagem direta antes de perpetuar o fallback.
+checagem direta antes de perpetuar o fallback. Para coordenação entre chats, use
+as ferramentas nativas fornecidas pelo runtime; ausência em uma lista filtrada não
+prova que um entrypoint conhecido está indisponível. Verifique a interface e o erro
+real uma vez; não trocar ferramenta direta disponível por ponte que exige token
+nem inventar APIs. As mensagens continuam limitadas à autorização humana existente.
 
 ## Decisão curta no checkpoint existente
 

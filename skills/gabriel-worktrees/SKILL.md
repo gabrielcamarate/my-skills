@@ -27,4 +27,8 @@ desenvolvimento identificado e liberado, por fast-forward, preservando trabalho
 tracked/untracked/ignored, branches próprias e executores ativos. Conferir os SHAs
 local/remoto e registrar resultado ou blocker/consumidor/ação no recibo existente.
 Fetch ou outro worktree atualizado não certificam o destino. Sem força/reset/stash/clean
-ou promoção de produção; coordenação e mensagens seguem a autorização disponível.
+ou promoção de produção. Consultas de leitura não exigem nova aprovação. Para
+mensagens operacionais, reutilize a autorização humana permanente que já cubra o
+projeto e essa coordenação, sem pedi-la de novo por chat; a skill não a concede.
+Libere o consumo próprio sem esperar a liberação alheia e use um único responsável
+para sincronizar o checkout compartilhado e devolver seu readback aos consumidores.
