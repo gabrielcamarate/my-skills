@@ -36,6 +36,14 @@ passar integralmente, e isso é execução válida sem poda. Só alegar poda com
 e original recuperável. Não aplicar também `filter_output` do Siftr ao mesmo resultado.
 Test Filter seleciona feedback durante iteração; não reduz os checks finais obrigatórios.
 
+Compactação Jev existe só no Claude Code, pelo plugin `fast-jev-compaction` do My Tools
+(function hooks `session.compact`, OpenRouter). Ele age sozinho no `/compact` e na
+autocompactação; não é skill, MCP nem gatilho para o agente chamar. No Codex não há
+esse plugin: o Pruner continua no wrapper e a compactação Jev é só o experimento do
+My Tools descrito em `gabriel-reflect`. Só alegar uso com a linha de status
+`last /compact: kept N/M messages, no summary`; `fallback to built-in summary` ou o aviso
+genérico "Sessão compactada" não provam Jev.
+
 ## Exceções, falhas e evidência
 
 Uma dispensa precisa apontar uma condição da tabela ou um conflito real com instrução
