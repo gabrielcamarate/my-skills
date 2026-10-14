@@ -1,20 +1,14 @@
 ---
 name: gabriel-release
-description: "Preparar uma release versionada e executar somente a publicação autorizada, vinculando versão, candidato, CI e artefatos."
+description: "Conferir ou preparar uma release: versão ligada ao SHA exato, publicação pelo mecanismo do projeto e smoke do artefato entregue."
 ---
 
 # Release
 
-## Entrada
-Escopo e estratégia de release do projeto, candidato integrado e autoridade atual. “Preparar” termina com um candidato revisável. Publicar exige autorização que cubra versão, destino e ação; reaproveite a que já existe.
+Versão, tag e entrega ligadas ao mesmo SHA. O mecanismo vem do `AGENTS.md` e dos docs do projeto. Exemplo vivo: Xlondz.
 
-1. Identifique branch de release, último marco publicado, candidato, árvore local e pendências. Reconcile issues e changelog com o código. Uma release não deve absorver tickets ainda não aprovados.
-2. Escolha a versão pela política real e impacto: correção, adição compatível ou quebra de contrato. Confira todas as fontes de versão e metadados de pacote. Não deduza compatibilidade apenas do título de PR.
-3. Verifique auditorias e gates exigidos. Para lote composto, confirme a evidência de integração. Uma alteração de versão deve ter resolução de metadados e build/package adequados; reutilize testes comportamentais somente quando suas entradas não mudaram.
-4. Prepare changelog, instruções de upgrade/rollback, artefatos e destino. Fixe SHA e hashes disponíveis. Use `gabriel-release-smoke-test` para provar o artefato que será entregue; o checkout de desenvolvimento não o substitui.
-5. Antes da publicação, revalide head, tags existentes, autoridade e CI exato. Se uma tag já existe, compare seu alvo e a publicação correspondente. Nunca mova uma tag publicada silenciosamente nem trate retry como permissão para sobrescrever artefato.
-6. Publique pelo mecanismo documentado somente dentro da autorização. Em timeout, reconcilie tag, release e artefatos antes de repetir. Verifique o destino e o artefato realmente distribuído. Deploy, migrações e produção conservam seus gates próprios.
-7. Confirme estado remoto e comportamento relevante. Execute limpeza já autorizada pelas regras do projeto; não remova worktree ativa, dirty ou com arquivos ignorados de usuário. Esta skill não estabelece uma autorização de cleanup.
-
-## Entrega
-Versão, SHA, CI, artefatos/hash e destino, smoke efetivamente executado, aceite operacional e pendências. Distingua preparado, publicado e validado em produção. Não apresente release iniciada como concluída.
+1. Descubra como o projeto publica. No Xlondz, a versão já vem no PR (`release cut`) e a publicação é automática depois do merge com o CI da main verde: a skill **verifica**, não publica à mão. Projeto sem automação: a versão sai da classificação do CHANGELOG e o resto segue o doc dele.
+2. Confirme que a tag e a release apontam para o SHA do squash e que o CI da main passou **nesse SHA**. Tag anotada, nunca movida nem reescrita. Em timeout, reconcilie o estado antes de repetir.
+3. Smoke do **artefato entregue**, não do checkout (Xlondz: `scripts/artifact_smoke.py` e os smokes do deploy).
+4. Separe "publicado" de "em produção": confira o deploy do mesmo artefato e a versão ativa. Deploy que ficou para trás (`NO_RUNTIME_CHANGE` não é deploy de código) entra no relatório. Source: xlondz#520.
+5. Release só quando pedida ou quando o fluxo do projeto a dispara. Nunca corte release que ninguém pediu.

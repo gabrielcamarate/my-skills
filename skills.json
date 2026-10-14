@@ -1,6 +1,13 @@
 {
   "version": 2,
   "skills": [
+    "gabriel-github-resolution",
+    "gabriel-iss-audit",
+    "gabriel-pr-audit",
+    "gabriel-pr-bump",
+    "gabriel-release"
+  ],
+  "retired": [
     "gabriel-agent-browser",
     "gabriel-blog-cost-charts",
     "gabriel-clonedeps",
@@ -8,27 +15,20 @@
     "gabriel-deepwork",
     "gabriel-effect",
     "gabriel-fact-check",
-    "gabriel-github-resolution",
     "gabriel-humanizer",
     "gabriel-improve-codebase-architecture",
-    "gabriel-iss-audit",
     "gabriel-loop-engineering",
     "gabriel-post-refactor",
-    "gabriel-pr-audit",
-    "gabriel-pr-bump",
     "gabriel-pr-post-audit",
+    "gabriel-pr-review",
     "gabriel-reflect",
-    "gabriel-release",
     "gabriel-release-smoke-test",
+    "gabriel-resolve",
     "gabriel-security-audit",
     "gabriel-simplify",
-    "gabriel-verification-planning",
-    "gabriel-worktrees"
-  ],
-  "retired": [
     "gabriel-triage",
-    "gabriel-pr-review",
-    "gabriel-resolve",
-    "gabriel-verify"
+    "gabriel-verification-planning",
+    "gabriel-verify",
+    "gabriel-worktrees"
   ]
 }

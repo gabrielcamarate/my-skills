@@ -30,10 +30,6 @@ def validate(root=ROOT):
     if (root / "AGENTS.md").read_bytes() != (root / "CLAUDE.md").read_bytes():
         raise ValueError("AGENTS.md and CLAUDE.md differ")
     for name in names:
-        routing = root / "skills" / name / "references/tool-routing.md"
-        shared = (root / "docs/tool-routing.md").resolve()
-        if not routing.is_symlink() or routing.resolve() != shared or not shared.is_file() or not shared.is_relative_to(root.resolve()):
-            raise ValueError(f"Missing or escaping mandatory tool routing: {name}")
         text = (root / "skills" / name / "SKILL.md").read_text()
         parts = text.split("---\n", 2)
         if len(parts) != 3 or parts[0] or not parts[2].strip():
@@ -48,10 +44,8 @@ def validate(root=ROOT):
             raise ValueError(f"Nonportable path or unfinished scaffold: {name}")
         for link in re.findall(r"\]\((references/[^)]+)\)", parts[2]):
             reference = (root / "skills" / name / link.split("#", 1)[0]).resolve()
-            shared = (root / "docs" / "tool-routing.md").resolve()
             inside_skill = reference.is_relative_to((root / "skills" / name).resolve())
-            shared_link = link.split("#", 1)[0] == "references/tool-routing.md" and reference == shared and shared.is_relative_to(root.resolve())
-            if not (inside_skill or shared_link) or not reference.is_file():
+            if not inside_skill or not reference.is_file():
                 raise ValueError(f"Missing or escaping reference: {name}/{link}")
         ui = (root / "skills" / name / "agents/openai.yaml").read_text()
         fields = dict(line.strip().split(":", 1) for line in ui.splitlines() if line.startswith("  "))

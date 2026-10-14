@@ -98,40 +98,19 @@ class LinksTest(unittest.TestCase):
         self.assertFalse(Path(rows[0]["link"]).is_symlink())
 
 
-class SharedReferencesTest(unittest.TestCase):
+class ReferencesTest(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name) / "repo"
         shutil.copytree(ctl.ROOT, self.root, symlinks=True, ignore=shutil.ignore_patterns(".git", "__pycache__"))
-        self.ref = self.root / "skills/gabriel-agent-browser/references/tool-routing.md"
+        self.ref = self.root / "skills/gabriel-pr-audit/references/trust-and-evidence.md"
 
-    def test_every_installed_skill_can_read_the_canonical_routing(self):
-        home = Path(self.temp.name) / "home"
-        ctl.install(ctl.plan(self.root, home, ["codex", "claude"]))
-        for target in ctl.LOCATIONS:
-            for name in ctl.inventory(self.root):
-                with self.subTest(target=target, name=name):
-                    installed = home / ctl.LOCATIONS[target] / name / "references/tool-routing.md"
-                    self.assertEqual(installed.read_bytes(), (self.root / "docs/tool-routing.md").read_bytes())
+    def test_canonical_repository_validates(self):
+        self.assertEqual(sorted(ctl.validate(self.root)), sorted(ctl.inventory(self.root)))
 
-    def test_unreferenced_missing_routing_is_rejected(self):
-        ref = self.root / "skills/gabriel-reflect/references/tool-routing.md"
-        if ref.is_symlink() or ref.exists():
-            ref.unlink()
-        with self.assertRaises(ValueError):
-            ctl.validate(self.root)
-
-    def test_shared_guide_resolves_through_installed_skill(self):
-        ctl.validate(self.root)
-        home = Path(self.temp.name) / "home"
-        ctl.install(ctl.plan(self.root, home, ["codex"]))
-        installed = home / ".agents/skills/gabriel-agent-browser/references/tool-routing.md"
-        self.assertEqual(installed.resolve(), self.root / "docs/tool-routing.md")
-        self.assertEqual(installed.read_bytes(), (self.root / "docs/tool-routing.md").read_bytes())
-
-    def test_missing_shared_guide_rejected(self):
-        (self.root / "docs/tool-routing.md").unlink()
+    def test_missing_linked_reference_rejected(self):
+        self.ref.unlink()
         with self.assertRaises(ValueError):
             ctl.validate(self.root)
 
@@ -143,14 +122,10 @@ class SharedReferencesTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             ctl.validate(self.root)
 
-    def test_shared_document_itself_cannot_escape(self):
-        external = Path(self.temp.name) / "external.md"
-        external.write_text("outside")
-        shared = self.root / "docs/tool-routing.md"
-        shared.unlink()
-        shared.symlink_to(external)
-        with self.assertRaises(ValueError):
-            ctl.validate(self.root)
+    def test_parked_skill_is_not_active(self):
+        manifest = ctl.inventory(self.root)
+        self.assertNotIn("gabriel-loop-engineering", manifest)
+        self.assertIn("gabriel-loop-engineering", ctl.retired_inventory(self.root))
 
 
 if __name__ == "__main__":

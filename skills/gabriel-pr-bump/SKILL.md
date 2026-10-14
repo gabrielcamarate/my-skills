@@ -1,19 +1,14 @@
 ---
 name: gabriel-pr-bump
-description: "Consolidar um lote autorizado de atualizações compatíveis de dependências e verificar o lockfile e o comportamento resultantes."
+description: "Consolidar atualizações e alertas de dependências num único PR verificado: lote compatível, piso de supply chain e um passe de CI."
 ---
 
-# Atualizações de dependências
+# Lote de dependências
 
-## Objetivo
-Atualizar um conjunto coerente de dependências com um gate do resultado composto, sem resolver PRs de bots mecanicamente um a um.
+Atualizações e alertas viram um único PR. Os comandos vêm do fluxo no `AGENTS.md` do projeto. Exemplo vivo: Xlondz.
 
-1. Leia política de atualização, gerenciador, versões resolvidas, manifestos e lockfile. Liste PRs autorizados e classifique compatíveis, major, migração e substituição de origem. Não inclua todo o backlog por associação.
-2. Leia notas oficiais das versões e advisories relevantes. Examine diretas e transitivas alteradas: registry, integridade, licença exigida pelo projeto, git/path dependencies, ranges e scripts de instalação novos. Bloqueie origem inexplicável ou comportamento suspeito antes de instalar.
-3. Forme um lote de atualizações compatíveis usando o gerenciador existente. Preserve constraints intencionais e runtimes suportados. Major ou migração sai do lote até haver escopo e plano próprios. Não edite o lockfile para fabricar resolução impossível.
-4. Instale em ambiente apropriado à confiança do código. Confira diff de manifestos/lockfile, dependências inesperadas, scripts e superfície afetada. Investigue conflito pela causa; não amplie versões indiscriminadamente nem desative verificações.
-5. Rode checks focados durante ajustes e o gate requerido uma vez no candidato final. Inclua build/package quando a atualização afeta empacotamento, e teste do caminho relevante quando afeta runtime. Registre versões antes/depois e checks reutilizados com justificativa.
-6. Prepare a entrega do lote. Somente após publicação/integração autorizadas e confirmadas, reconcilie PRs substituídos e feche os que realmente perderam objeto, quando autorizado. Release e deploy são ações distintas.
-
-## Saída
-Tabela pacote, versão anterior/nova, origem, impacto e prova. Liste upgrades excluídos, motivo, lockfile final e estado real dos PRs. Não atribua resolução a um push ainda não verificado.
+1. Liste os PRs do Dependabot (`gh pr list --author app/dependabot`) e os alertas abertos (`gh api repos/O/R/dependabot/alerts`). Classifique cada item: compatível, major ou troca de origem. Major sai do lote e vira issue.
+2. **Piso de supply chain:** registry público, nome, versão e checksum conferidos. Fonte git ou path, typosquat ou hook de install novo: pare e faça auditoria completa.
+3. **Um lote, um PR, um passe de CI.** Use o gerenciador fixado do projeto (Xlondz: pnpm 10.18.1 em `web/` via `cloud-setup.sh`; `go get` e `go mod tidy` em `wireguard-manager/`). Depois o núcleo rápido (`./scripts/fast-check.sh`), versão e CHANGELOG. Conserte para frente; não serialize.
+4. Alerta sem correção upstream: prove se uma mitigação local cobre o advisory (reprodução com e sem ela e teste de regressão) e registre a evidência. A dispensa do alerta fica com Gabriel. Source: xlondz#515, #517.
+5. Depois do merge, feche os PRs do Dependabot que ficaram sem objeto e confira se os alertas fecharam.
