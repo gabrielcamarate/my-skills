@@ -5,8 +5,6 @@ description: "Revisar a linguagem de um texto para eliminar artificialidade e pr
 
 # Edição de linguagem natural
 
-Fase experimental obrigatória: ao ocorrer um gatilho desta skill, execute a ferramenta oficial indicada antes de substituir pela rota habitual. Leia somente a linha pertinente do [roteamento](references/tool-routing.md), que define gatilhos e dispensas. Ler a skill ou consultar `--help` não conta como uso. Registre chamada/resultado ou dispensa concreta no checkpoint existente e resuma isso na entrega; falha da ferramenta pede fallback, não abandono da tarefa.
-
 ## Objetivo
 Deixar o texto mais direto e legível, conservando conteúdo e intenção. Não é checagem de fatos nem licença para inventar experiências pessoais.
 
@@ -19,7 +17,3 @@ Deixar o texto mais direto e legível, conservando conteúdo e intenção. Não 
 
 ## Entrega
 Texto editado; explicação breve só para mudanças materiais ou quando pedida. Se houver dúvida factual, sinalize ou encaminhe a `gabriel-fact-check`; não transforme edição de estilo em validação factual implícita.
-
-## Ferramentas obrigatórias nos gatilhos deste escopo
-
-Para rascunho com vários parágrafos e regras de estilo existentes adequadas ao idioma, execute a CLI `snifftest` conforme a skill upstream antes da revisão editorial. Confira cada alerta e preserve o significado; o teste sintético não comprovou precisão em português. Não criar um conjunto de regras ou enviar conversa privada só para chamar a ferramenta. Veja [gatilhos e dispensas](references/tool-routing.md#decisões-documentos-e-contratos).
