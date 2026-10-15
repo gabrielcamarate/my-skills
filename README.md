@@ -21,9 +21,19 @@ Como usar: [ritual](docs/workflow.md).
 
 ## Instalar
 
-```bash
-python3 scripts/skillctl.py validate
-python3 scripts/skillctl.py install --apply
+**Claude (local e nuvem):** plugin `gabriel` deste repositório, que também é marketplace.
+
+```text
+/plugin install gabriel --marketplace gabrielcamarate/my-skills
 ```
 
-O `install` cria links individuais em `~/.agents/skills` (Codex) e `~/.claude/skills` (Claude) e remove os links das skills estacionadas.
+Cada projeto declara o mesmo plugin no `.claude/settings.json` (`extraKnownMarketplaces` e `enabledPlugins`), para que sessões na nuvem carreguem as skills sem copiá-las. No Claude, as skills aparecem como `gabriel:gabriel-pr-audit` etc.
+
+**Codex:** links individuais em `~/.agents/skills`.
+
+```bash
+python3 scripts/skillctl.py validate
+python3 scripts/skillctl.py install --target codex --apply
+```
+
+O `install` também remove os links das skills estacionadas. `--target claude` continua disponível, mas duplica as skills se o plugin estiver ativo.

@@ -1,0 +1,13 @@
+{
+  "name": "gabriel-skills",
+  "owner": {
+    "name": "Gabriel Camarate"
+  },
+  "plugins": [
+    {
+      "name": "gabriel",
+      "source": "./",
+      "description": "As cinco skills do ritual: pr-audit, iss-audit, github-resolution, pr-bump e release."
+    }
+  ]
+}
