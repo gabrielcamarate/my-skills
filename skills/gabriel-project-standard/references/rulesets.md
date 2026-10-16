@@ -11,11 +11,13 @@ gh api -X POST repos/$R/rulesets --input - <<J
  "conditions":{"ref_name":{"include":["refs/heads/$2"],"exclude":[]}},
  "rules":[{"type":"deletion"},{"type":"non_fast_forward"},
   {"type":"pull_request","parameters":{"required_approving_review_count":0,"dismiss_stale_reviews_on_push":false,"require_code_owner_review":false,"require_last_push_approval":false,"required_review_thread_resolution":false,"allowed_merge_methods":$3}},
-  {"type":"required_status_checks","parameters":{"strict_required_status_checks_policy":$4,"required_status_checks":[{"context":"$CHECK"}]}}]}
+  {"type":"required_status_checks","parameters":{"strict_required_status_checks_policy":$4,"required_status_checks":[{"context":"$CHECK","integration_id":15368}]}}]}
 J
 }
 rule "Protect staging branch" staging '["squash"]' false
-rule "Protect main branch" main '["squash","merge"]' true
+rule "Protect main branch" main '["squash","merge"]' false
 ```
+
+Sem `strict` nos dois: a promoção por merge commit deixa a `staging` sempre atrás da `main`, e `strict` travaria a segunda promoção; o gate de promoção garante o SHA exato. `integration_id` 15368 = GitHub Actions (status manual não satisfaz). O POST não é idempotente: confira antes se o ruleset já existe.
 
 Confira depois: `gh api repos/$R/rulesets --jq '.[].name'`. Sem regra `merge_queue`.

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# The fast core an agent must pass before opening a PR (#327): lint, typecheck,
+# The fast core an agent must pass before opening a PR: lint, typecheck,
 # unit tests and build, without credentials or local services. Run before every push.
 # Heavy gates run after merge on staging and before promotion to main.
 set -Eeuo pipefail

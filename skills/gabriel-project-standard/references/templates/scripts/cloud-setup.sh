@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Prepare a fresh agent environment (Codex/Claude cloud or a clean machine) for
-# ./scripts/fast-check.sh. Idempotent; needs network, never needs credentials (#327).
+# ./scripts/fast-check.sh. Idempotent; needs network, never needs credentials.
 set -Eeuo pipefail
 
 ROOT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
@@ -21,8 +21,8 @@ fi
 
 # Cloud sessions commit as the repository owner, like local work.
 if [[ "${CLAUDE_CODE_REMOTE:-}" == true ]]; then
-  git config --global user.name 'Gabriel Camarate'
-  git config --global user.email '141892923+gabrielcamarate@users.noreply.github.com'
+  git config --global user.name '__GIT_NAME__'
+  git config --global user.email '__GIT_NOREPLY_EMAIL__'
 fi
 
 (cd "$ROOT_DIR" && pnpm install --frozen-lockfile)

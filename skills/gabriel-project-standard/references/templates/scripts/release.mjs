@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Versioned releases (#281). package.json is canonical; CHANGELOG.md's first
+// Versioned releases. package.json is canonical; CHANGELOG.md's first
 // version section must match it; tag v<version> may be absent or on HEAD.
 //   check [--publish]             validate (local only, no network). Without
 //                                 --publish a tag on another commit means the

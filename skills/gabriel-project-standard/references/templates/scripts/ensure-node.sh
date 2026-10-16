@@ -2,7 +2,7 @@
 # Make the project's exact Node.js (.nvmrc and CI pin 22.20.0)
 # available as $NODE_PREFIX/bin/node. Downloads the official build from
 # nodejs.org only when needed, verifies it against the published SHASUMS256.txt
-# and installs it idempotently. Never replaces a node it did not install (#510).
+# and installs it idempotently. Never replaces a node it did not install.
 #   ./scripts/ensure-node.sh          install if `node` on PATH is another version
 #   ./scripts/ensure-node.sh --check  only verify the version on PATH
 set -Eeuo pipefail

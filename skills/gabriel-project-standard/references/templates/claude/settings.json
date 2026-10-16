@@ -71,7 +71,10 @@
       "Bash(rm:*)",
       "Bash(supabase db:*)",
       "Bash(supabase link:*)",
-      "Bash(vercel:*)"
+      "Bash(vercel:*)",
+      "Bash(gh pr merge * --merge*)",
+      "Bash(gh pr merge --merge*)",
+      "Bash(gh pr merge * -m*)"
     ],
     "deny": [
       "Bash(docker system prune:*)",

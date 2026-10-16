@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Regression cases for ensure-node.sh (#510). A local file:// distribution with
+# Regression cases for ensure-node.sh. A local file:// distribution with
 # stub binaries stands in for nodejs.org, so the test needs no network.
 set -Eeuo pipefail
 

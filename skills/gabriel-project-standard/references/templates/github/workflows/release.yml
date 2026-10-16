@@ -1,7 +1,7 @@
 name: Release
 
 # Publishes tag v<version> and its GitHub Release for the exact commit that
-# reached main (#281). Merging into main is Gabriel's approval gate; nothing
+# reached main. Merging into main is Gabriel's approval gate; nothing
 # publishes from staging or task branches. Idempotent: an existing tag on the
 # same commit is reused; a tag on another commit fails closed.
 on:
