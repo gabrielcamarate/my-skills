@@ -21,6 +21,7 @@ fi
 
 # Cloud sessions commit as the repository owner, like local work.
 if [[ "${CLAUDE_CODE_REMOTE:-}" == true ]]; then
+  [[ '__GIT_NAME__' != __* ]] || { echo 'cloud-setup: preencha a identidade git noreply' >&2; exit 1; }
   git config --global user.name '__GIT_NAME__'
   git config --global user.email '__GIT_NOREPLY_EMAIL__'
 fi

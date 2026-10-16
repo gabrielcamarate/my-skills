@@ -74,7 +74,8 @@
       "Bash(vercel:*)",
       "Bash(gh pr merge * --merge*)",
       "Bash(gh pr merge --merge*)",
-      "Bash(gh pr merge * -m*)"
+      "Bash(gh pr merge * -m*)",
+      "Bash(gh pr merge -m*)"
     ],
     "deny": [
       "Bash(docker system prune:*)",
