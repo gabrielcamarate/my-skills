@@ -23,3 +23,5 @@ Um ticket aprovado por vez. Os comandos vêm do fluxo no `AGENTS.md` do projeto.
 Comandos: `git -C <worktree> ...` e `gh --repo <owner/repo> ...`, nunca `cd <worktree> && git ...`; o Claude Code pede confirmação a cada `cd` seguido de git. Source: maison-eclet sessão de 16/10/2026.
 
 Limpeza: `git -C <repo> worktree remove <pasta>` sem `--force`; se recusar, pare e reporte. Nunca `rm -rf`. Source: rakmma, sessões de 16/10/2026.
+
+Toda espera tem prazo (`timeout` ou contador); nunca laço `until` sem limite. Para CI: `timeout 1800 gh pr checks N --watch --fail-fast`. Source: maison-eclet, laço preso por 1 h em 16/10/2026.
