@@ -1,0 +1,4 @@
+interface:
+  display_name: "gabriel-project-standard"
+  short_description: "Adotar o padrão de projeto (fluxo Akita) num repositório"
+  default_prompt: "Use $gabriel-project-standard para levar este projeto ao padrão de projeto."

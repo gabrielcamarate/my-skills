@@ -16,6 +16,7 @@ Cinco skills, as do ritual diário do método de Fabio Akita, reescritas a parti
 | `gabriel-github-resolution` | Uma issue de ponta a ponta até a entrega |
 | `gabriel-pr-bump` | Lote único de dependências e alertas |
 | `gabriel-release` | Versão, publicação e smoke ligados ao SHA exato |
+| `gabriel-project-standard` | Levar um projeto ao padrão de projeto (fluxo Akita) |
 
 Como usar: [ritual](docs/workflow.md).
 
