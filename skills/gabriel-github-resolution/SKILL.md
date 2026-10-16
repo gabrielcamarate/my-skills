@@ -19,3 +19,5 @@ Um ticket aprovado por vez. Os comandos vêm do fluxo no `AGENTS.md` do projeto.
    3. CI da main, publicação e deploy pelo workflow.
    4. Smokes, fechamento (Xlondz: `./scripts/xlondz complete`) e limpeza de branch e worktree.
 8. Se o deploy falhar: confira a produção, reconcilie o estado real e não reenvie às cegas. Registre na issue. Source: xlondz#520.
+
+Comandos: `git -C <worktree> ...` e `gh --repo <owner/repo> ...`, nunca `cd <worktree> && git ...`; o Claude Code pede confirmação a cada `cd` seguido de git. Source: maison-eclet sessão de 16/10/2026.
