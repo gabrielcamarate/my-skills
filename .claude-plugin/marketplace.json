@@ -7,7 +7,7 @@
     {
       "name": "gabriel",
       "source": "./",
-      "description": "As cinco skills do ritual: pr-audit, iss-audit, github-resolution, pr-bump e release."
+      "description": "As skills do ritual (pr-audit, iss-audit, github-resolution, pr-bump, release) e o padrão de projeto (project-standard)."
     }
   ]
 }

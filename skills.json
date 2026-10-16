@@ -5,6 +5,7 @@
     "gabriel-iss-audit",
     "gabriel-pr-audit",
     "gabriel-pr-bump",
+    "gabriel-project-standard",
     "gabriel-release"
   ],
   "retired": [

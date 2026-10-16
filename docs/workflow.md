@@ -18,3 +18,4 @@ As skills não carregam comandos de projeto. Cada uma manda seguir o fluxo do `A
 - Skill sem uso em 30 dias é estacionada em `archives/`.
 
 Histórico: o catálogo anterior (23 skills, roteamento obrigatório de ferramentas) está em `archives/skills-parked-2026-10-14/`. A auditoria que motivou a poda está em `Gabriel-OS/drafts/skills-audit-2026-10-14.md`.
+- Projeto novo ou fora do padrão: "adote o padrão de projeto com gabriel-project-standard".

@@ -1,0 +1,129 @@
+name: Pull Request Quality
+
+# Akita: cheap PR staging; full PR main; heavy staging runs after merge.
+on:
+  # `edited` re-runs the gate when a PR base changes (e.g. staging -> main), so the fast
+  # check of a staging PR can never satisfy main. No job-level `if`: skipped counts as green.
+  pull_request:
+    types: [opened, synchronize, reopened, edited]
+    branches:
+      - main
+      - staging
+
+permissions:
+  contents: read
+  actions: read
+  issues: read
+
+concurrency:
+  group: pr-quality-${{ github.event.pull_request.number || github.ref }}
+  # Superseded PR candidates can be cancelled.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  release-quality:
+    name: release-quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      # Full gate everywhere except PRs into staging (fail closed: any other event is full).
+      FULL_CI: ${{ !(github.event_name == 'pull_request' && github.base_ref == 'staging') }}
+      # __DUMMY_ENV__: variáveis falsas e públicas que o build/testes exigem (nunca segredos reais)
+      NODE_OPTIONS: --max-old-space-size=4096
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Enforce promotion source
+        env:
+          EVENT: ${{ github.event_name }}
+          BASE_REF: ${{ github.base_ref }}
+          HEAD_REF: ${{ github.head_ref }}
+          HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
+        run: |
+          # Only the repository's own staging may open a PR into main (promotion).
+          if [[ $EVENT == pull_request && $BASE_REF == main ]]; then
+            [[ $HEAD_REF == staging && $HEAD_REPO == "$GITHUB_REPOSITORY" ]] \
+              || { echo "PRs into main must come from this repository's staging"; exit 1; }
+          fi
+
+      - name: Require green staging tip for promotion
+        if: github.base_ref == 'main'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          STAGING_SHA: ${{ github.event.pull_request.head.sha }}
+        run: python3 scripts/__PROJECT__-workflow.py staging-ready --expected-sha "$STAGING_SHA"
+
+      - name: Verify task scope
+        if: github.base_ref == 'staging'
+        run: python3 scripts/check-pr-scope.py
+
+      - name: Verify local workflow and domain skills
+        run: |
+          python3 scripts/__PROJECT__-workflow.py doctor
+          python3 -m unittest discover -s scripts/tests -p 'test_*.py' -v
+          bash scripts/test-ensure-node.sh
+          node --test scripts/tests/release.test.mjs
+          node scripts/release.mjs check
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Scan committed secrets
+        run: pnpm security:secrets
+
+      - name: Run supply-chain baseline
+        if: env.FULL_CI == 'true'
+        run: pnpm security:supply-chain
+
+      - name: Run OWASP evidence baseline
+        if: env.FULL_CI == 'true'
+        run: pnpm security:owasp:evidence
+
+      - name: Run automated security scans baseline
+        if: env.FULL_CI == 'true'
+        run: pnpm security:scan:automated
+
+      # `pnpm check` split so the test suite runs once (with coverage on the full gate).
+      - name: Run release gate
+        run: |
+          pnpm typecheck
+          pnpm lint
+
+      - name: Run coverage gate
+        if: env.FULL_CI == 'true'
+        run: pnpm test:coverage
+
+      - name: Restore Next.js build cache
+        if: env.FULL_CI == 'true'
+        uses: actions/cache@v4
+        with:
+          path: .next/cache
+          key: nextjs-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ hashFiles('app/**', 'components/**', 'lib/**', 'next.config.ts', 'proxy.ts', 'instrumentation*.ts', 'sentry.*.config.ts') }}
+          restore-keys: |
+            nextjs-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-
+
+      - name: Run build gate
+        if: env.FULL_CI == 'true'
+        run: pnpm build
+
+      - name: Install Playwright Chromium
+        if: env.FULL_CI == 'true'
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Run smoke e2e gate
+        if: env.FULL_CI == 'true'
+        run: pnpm e2e

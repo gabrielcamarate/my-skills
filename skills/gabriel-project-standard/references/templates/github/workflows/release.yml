@@ -1,0 +1,55 @@
+name: Release
+
+# Publishes tag v<version> and its GitHub Release for the exact commit that
+# reached main (#281). Merging into main is Gabriel's approval gate; nothing
+# publishes from staging or task branches. Idempotent: an existing tag on the
+# same commit is reused; a tag on another commit fails closed.
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: release-main
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    name: release
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout exact main commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Validate version, changelog and tag
+        run: node scripts/release.mjs check --publish
+
+      - name: Publish tag and GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          version=$(node -p "require('./package.json').version")
+          tag="v$version"
+          if gh release view "$tag" >/dev/null 2>&1; then
+            target=$(git rev-list -n 1 "$tag")
+            [ "$target" = "$SHA" ] || { echo "FAIL  release $tag exists on $target, not $SHA"; exit 1; }
+            echo "PASS  release $tag already published for $SHA"
+            exit 0
+          fi
+          node scripts/release.mjs notes > "$RUNNER_TEMP/notes.md"
+          gh release create "$tag" --target "$SHA" --title "$tag" --notes-file "$RUNNER_TEMP/notes.md" --latest
+          echo "PUBLISHED  $tag  $SHA"
