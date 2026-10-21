@@ -20,7 +20,7 @@ Um ticket aprovado por vez. Os comandos vêm do fluxo no `AGENTS.md` do projeto.
    4. Smokes, fechamento (Xlondz: `./scripts/xlondz complete`) e limpeza de branch e worktree.
 8. Se o deploy falhar: confira a produção, reconcilie o estado real e não reenvie às cegas. Registre na issue. Source: xlondz#520.
 
-Comandos: `git -C <worktree> ...` e `gh <comando> ... --repo <owner/repo>` (o `--repo` no fim: `gh --repo X pr ...` não casa com as permissões liberadas e o modo automático bloqueia), nunca `cd <worktree> && git ...`. Source: maison-eclet 16/10 e my-finances #127, 20/10/2026.
+Comandos: `git -C <worktree> ...` e `gh <comando> ... --repo <owner/repo>` (o `--repo` no fim: `gh --repo X pr ...` não casa com as permissões liberadas e o modo automático bloqueia), nunca `cd <worktree> && git ...`. Um comando por chamada, sem heredoc, `$(...)` ou pipes; corpo do PR em arquivo escrito pela ferramenta de edição e `gh pr create --body-file`. Source: maison-eclet 16/10, my-finances #127 e rakmma #881, 21/10/2026.
 
 Limpeza: `git -C <repo> worktree remove <pasta>` sem `--force`; se recusar, pare e reporte. Nunca `rm -rf`. Source: rakmma, sessões de 16/10/2026.
 
