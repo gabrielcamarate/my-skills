@@ -24,8 +24,9 @@ def check(event):
         raise ValueError('Empty task')
     if any(Path(p).name.startswith('.env') and Path(p).name != '.env.example' for p in paths):
         raise ValueError('Environment files are outside PR scope')
-    if not {'CHANGELOG.md', 'README.md'}.issubset(paths):
-        raise ValueError('Task requires CHANGELOG.md and README.md')
+    # Only CHANGELOG is mandatory: requiring README in every PR makes parallel PRs conflict.
+    if 'CHANGELOG.md' not in paths:
+        raise ValueError('Task requires CHANGELOG.md')
 
 
 if __name__ == '__main__':
