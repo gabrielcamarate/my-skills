@@ -6,70 +6,120 @@ import unittest
 from pathlib import Path
 
 SCRIPT = Path(__file__).resolve().parents[1] / "check-pr-scope.py"
+LOG = "# Changelog\n\n## 0.1.4 - 2026-10-15\n\n- X.\n"
+OLD_LOG = "# Changelog\n\n## Unreleased\n\n- Antiga.\n\n## 0.1.4 - 2026-10-15\n\n- X.\n"
 
 
 class CheckPrScopeTest(unittest.TestCase):
-    """Task PRs carry a changes/<N>-*.md note; only the release PR touches CHANGELOG.md."""
+    """Task PRs add exactly one changes/<N>-<slug>.md; only a version bump edits CHANGELOG.md."""
 
-    def scope(self, files, branch="fix/12-audit-level", body="Refs #12", deleted=()):
-        with tempfile.TemporaryDirectory() as tmp:
-            git = lambda *args: subprocess.run(["git", "-C", tmp, *args], check=True, capture_output=True,
-                                               text=True).stdout.strip()
-            git("init", "-q", "-b", "staging")
-            git("config", "user.email", "t@example.com")
-            git("config", "user.name", "t")
-            Path(tmp, "CHANGELOG.md").write_text("# Changelog\n")
-            Path(tmp, "changes").mkdir()
-            Path(tmp, "changes/7-old.md").write_text("### Fixed\n\n- Old.\n")
-            git("add", ".")
-            git("commit", "-qm", "base")
-            base = git("rev-parse", "HEAD")
-            for name in files:
-                Path(tmp, name).parent.mkdir(parents=True, exist_ok=True)
-                Path(tmp, name).write_text("change\n")
-            for name in deleted:
-                Path(tmp, name).unlink()
-            git("add", "-A")
-            git("commit", "-qm", "task")
-            event = Path(tmp, "event.json")
-            event.write_text(json.dumps({"pull_request": {
-                "head": {"ref": branch, "sha": git("rev-parse", "HEAD")},
-                "base": {"sha": base}, "body": body}}))
-            return subprocess.run([sys.executable, str(SCRIPT)], cwd=tmp, capture_output=True, text=True,
-                                  env={"GITHUB_EVENT_PATH": str(event), "PATH": "/usr/bin:/bin"}, timeout=30)
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        self.dir = Path(self.tmp.name)
+        self.git("init", "-q", "-b", "staging")
+        self.git("config", "user.email", "t@example.com")
+        self.git("config", "user.name", "t")
 
-    def test_task_with_its_change_note_passes(self):
-        result = self.scope(["lib/a.ts", "changes/12-audit-level.md"])
+    def git(self, *args):
+        return subprocess.run(["git", "-C", str(self.dir), *args], check=True, capture_output=True,
+                              text=True).stdout.strip()
+
+    def commit(self, files=None, deleted=(), message="c"):
+        for name, text in (files or {}).items():
+            (self.dir / name).parent.mkdir(parents=True, exist_ok=True)
+            (self.dir / name).write_text(text)
+        for name in deleted:
+            (self.dir / name).unlink()
+        self.git("add", "-A")
+        self.git("commit", "-qm", message)
+        return self.git("rev-parse", "HEAD")
+
+    def scope(self, files=None, deleted=(), branch="fix/12-audit-level", body=None, log=LOG, notes=(),
+              staging_after=None):
+        self.commit({"package.json": '{"version": "0.1.4"}\n', "CHANGELOG.md": log, "changes/README.md": "# Notas\n",
+                     **{f"changes/{n}": "- Old.\n" for n in notes}}, message="base")
+        self.git("checkout", "-qb", branch)
+        head = self.commit(files, deleted, "task")
+        self.git("checkout", "-q", "staging")
+        if staging_after:
+            self.commit(staging_after, message="parallel")
+        event = self.dir / ".git" / "event.json"
+        issue = branch.split("/")[1].split("-")[0]
+        event.write_text(json.dumps({"pull_request": {
+            "head": {"ref": branch, "sha": head}, "base": {"sha": self.git("rev-parse", "staging")},
+            "body": f"Refs #{issue}" if body is None else body}}))
+        return subprocess.run([sys.executable, str(SCRIPT)], cwd=self.dir, capture_output=True, text=True,
+                              env={"GITHUB_EVENT_PATH": str(event), "PATH": "/usr/bin:/bin"}, timeout=30)
+
+    def assertRefused(self, result, text=""):
+        self.assertNotEqual(result.returncode, 0, result.stderr)
+        self.assertIn(text, result.stderr)
+
+    def test_task_with_its_own_note_passes(self):
+        result = self.scope({"lib/a.ts": "a\n", "changes/12-audit-level.md": "- A.\n"})
         self.assertEqual(result.returncode, 0, result.stderr)
 
-    def test_task_without_change_note_fails(self):
-        result = self.scope(["lib/a.ts"])
-        self.assertNotEqual(result.returncode, 0)
-        self.assertIn("changes/12-", result.stderr)
-
-    def test_note_for_another_issue_does_not_count(self):
-        self.assertNotEqual(self.scope(["lib/a.ts", "changes/13-other.md"]).returncode, 0)
-
-    def test_task_touching_changelog_fails(self):
-        result = self.scope(["lib/a.ts", "changes/12-audit-level.md", "CHANGELOG.md"])
-        self.assertNotEqual(result.returncode, 0)
-        self.assertIn("CHANGELOG.md", result.stderr)
-
-    def test_deleting_the_note_does_not_count(self):
-        result = self.scope(["lib/a.ts"], branch="fix/7-old", body="Refs #7", deleted=["changes/7-old.md"])
-        self.assertNotEqual(result.returncode, 0)
-
-    def test_release_pr_updates_changelog_and_consumes_notes(self):
-        result = self.scope(["CHANGELOG.md", "package.json"], branch="release/20-v0-2-0", body="Refs #20",
-                            deleted=["changes/7-old.md"])
+    def test_editing_its_own_note_passes(self):
+        result = self.scope({"changes/12-audit-level.md": "- B.\n", "changes/README.md": "# Notas 2\n"},
+                            notes=["12-audit-level.md"])
         self.assertEqual(result.returncode, 0, result.stderr)
 
-    def test_release_pr_requires_changelog(self):
-        result = self.scope(["package.json"], branch="release/20-v0-2-0", body="Refs #20")
-        self.assertNotEqual(result.returncode, 0)
+    def test_task_without_note_is_refused(self):
+        self.assertRefused(self.scope({"lib/a.ts": "a\n"}), "changes/12-")
 
-    def test_closing_keyword_fails(self):
-        self.assertNotEqual(self.scope(["changes/12-a.md"], body="Refs #12\nCloses #12").returncode, 0)
+    def test_exactly_one_own_note(self):
+        for files, deleted, notes in (
+                ({"changes/13-other.md": "- A.\n"}, (), ()),
+                ({"changes/12-a.md": "- A.\n", "changes/12-b.md": "- B.\n"}, (), ()),
+                ({"changes/12-a.md": "- A.\n", "changes/7-old.md": "- C.\n"}, (), ["7-old.md"]),
+                ({"changes/12-a.md": "- A.\n"}, ["changes/7-old.md"], ["7-old.md"]),
+                ({"changes/12_Audit.md": "- A.\n"}, (), ())):
+            with self.subTest(files=files, deleted=deleted):
+                self.setUp()
+                self.assertRefused(self.scope(files, deleted, notes=notes))
+
+    def test_task_touching_changelog_is_refused(self):
+        result = self.scope({"changes/12-a.md": "- A.\n", "CHANGELOG.md": LOG + "\n- Nova.\n"})
+        self.assertRefused(result, "CHANGELOG.md")
+
+    def test_release_branch_type_is_not_a_task(self):
+        self.assertRefused(self.scope({"CHANGELOG.md": "x\n"}, branch="release/20-v0-2-0"))
+
+    def test_version_bump_is_the_release_and_consumes_every_note(self):
+        bump = {"package.json": '{"version": "0.1.5"}\n', "CHANGELOG.md": "# Changelog\n\n## 0.1.5 - 2026-10-22\n"}
+        notes = ["7-a.md", "9-b.md"]
+        ok = self.scope(bump, ["changes/7-a.md", "changes/9-b.md"], branch="chore/20-release", notes=notes)
+        self.assertEqual(ok.returncode, 0, ok.stderr)
+        self.setUp()
+        self.assertRefused(self.scope(bump, ["changes/7-a.md"], branch="chore/20-release", notes=notes), "9-b")
+        self.setUp()
+        self.assertRefused(self.scope({**bump, "changes/20-x.md": "- X.\n"}, branch="chore/20-release"))
+
+    def test_parallel_note_merged_into_staging_is_not_this_prs_change(self):
+        result = self.scope({"changes/12-a.md": "- A.\n"}, staging_after={"changes/600-b.md": "- B.\n"})
+        self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_legacy_migration_moves_only_a_non_empty_unreleased(self):
+        migration = {"CHANGELOG.md": LOG, "changes/0-unreleased-legacy.md": "- Antiga.\n", "changes/12-a.md": "- A.\n"}
+        ok = self.scope(migration, log=OLD_LOG)
+        self.assertEqual(ok.returncode, 0, ok.stderr)
+        self.setUp()
+        self.assertRefused(self.scope({**migration, "CHANGELOG.md": LOG + "- Y.\n"}, log=OLD_LOG), "CHANGELOG")
+        self.setUp()
+        self.assertRefused(self.scope({k: v for k, v in migration.items() if k != "CHANGELOG.md"}))
+
+    def test_legacy_migration_expires_once_staging_tip_has_migrated(self):
+        migration = {"CHANGELOG.md": LOG, "changes/0-unreleased-legacy.md": "- Antiga.\n", "changes/12-a.md": "- A.\n"}
+        result = self.scope(migration, log=OLD_LOG, staging_after={"CHANGELOG.md": LOG})
+        self.assertRefused(result, "CHANGELOG")
+
+    def test_refs_closing_keyword_and_env_files(self):
+        self.assertRefused(self.scope({"changes/12-a.md": "- A.\n"}, body="Refs #13"))
+        self.setUp()
+        self.assertRefused(self.scope({"changes/12-a.md": "- A.\n"}, body="Refs #12\nCloses #12"))
+        self.setUp()
+        self.assertRefused(self.scope({"changes/12-a.md": "- A.\n", ".env.local": "X=1\n"}))
 
 
 if __name__ == "__main__":
