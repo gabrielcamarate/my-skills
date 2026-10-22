@@ -17,12 +17,15 @@ def heavy(status="completed", conclusion="success"):
             "status": status, "conclusion": conclusion, "id": 1, "html_url": "run"}
 
 
-def fake_api(issues, runs):
+def fake_api(issues, runs, latest=()):
     def api(path):
         if path == "git/ref/heads/staging":
             return {"object": {"sha": TIP}}
         if path.startswith("issues?"):
             return issues
+        if path.startswith("actions/workflows/") and "status=completed" in path:
+            assert "branch=staging" in path and "event=push" in path, path
+            return {"workflow_runs": list(latest)}
         if path.startswith("actions/workflows/"):
             return {"workflow_runs": runs}
         raise AssertionError(path)
@@ -30,9 +33,9 @@ def fake_api(issues, runs):
 
 
 class StagingReadyTest(unittest.TestCase):
-    def ready(self, issues=(), runs=None, promotion=False):
+    def ready(self, issues=(), runs=None, promotion=False, latest=()):
         original = workflow.gh_api
-        workflow.gh_api = fake_api(list(issues), [heavy()] if runs is None else runs)
+        workflow.gh_api = fake_api(list(issues), [heavy()] if runs is None else runs, latest)
         try:
             return workflow.staging_ready(TIP, promotion=promotion)
         finally:
@@ -77,6 +80,18 @@ class StagingReadyTest(unittest.TestCase):
         stray = {**heavy("completed", "failure"), "event": "pull_request", "id": 2}
         self.assertTrue(self.ready(runs=[heavy(), stray])["ok"])
         self.assertFalse(self.ready(runs=[stray], promotion=True)["ok"])
+
+    def test_older_failure_stops_the_line_while_the_tip_still_runs(self):
+        # The reporter skips a failing run once the tip moved on; the latest completed run still counts.
+        older = {**heavy("completed", "failure"), "head_sha": "b" * 40, "id": 0, "head_branch": "staging"}
+        result = self.ready(runs=[heavy("in_progress", None)], latest=[older])
+        self.assertFalse(result["ok"])
+        self.assertTrue(any("b" * 40 in error for error in result["errors"]), result)
+        self.assertFalse(self.ready(runs=[], latest=[older])["ok"])
+
+    def test_older_success_keeps_the_line_moving(self):
+        older = {**heavy(), "head_sha": "b" * 40, "id": 0, "head_branch": "staging"}
+        self.assertTrue(self.ready(runs=[heavy("in_progress", None)], latest=[older])["ok"])
 
     def test_cli_accepts_promotion_flag(self):
         self.assertIn("--promotion", SCRIPT.read_text())

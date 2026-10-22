@@ -96,6 +96,16 @@ class CheckPrScopeTest(unittest.TestCase):
         self.setUp()
         self.assertRefused(self.scope({**bump, "changes/20-x.md": "- X.\n"}, branch="chore/20-release"))
 
+    def test_release_must_raise_the_version(self):
+        for version in ("0.1.3", "0.1.4-rc.1", "x"):
+            with self.subTest(version=version):
+                self.setUp()
+                result = self.scope({"package.json": f'{{"version": "{version}"}}\n', "lib/a.ts": "a\n"},
+                                    branch="chore/20-release")
+                self.assertRefused(result, "version")
+        self.setUp()
+        self.assertRefused(self.scope({"lib/a.ts": "a\n"}, ["package.json"], branch="chore/20-release"))
+
     def test_parallel_note_merged_into_staging_is_not_this_prs_change(self):
         result = self.scope({"changes/12-a.md": "- A.\n"}, staging_after={"changes/600-b.md": "- B.\n"})
         self.assertEqual(result.returncode, 0, result.stderr)

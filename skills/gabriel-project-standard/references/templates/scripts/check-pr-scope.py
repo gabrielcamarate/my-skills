@@ -43,6 +43,11 @@ def version(sha):
     return json.loads(blob(sha, 'package.json') or '{}').get('version')
 
 
+def semver(value):
+    match = re.fullmatch(r'(\d+)\.(\d+)\.(\d+)', value) if isinstance(value, str) else None
+    return tuple(map(int, match.groups())) if match else (-1,)
+
+
 def has_unreleased_notes(sha):
     match = UNRELEASED.search(blob(sha, 'CHANGELOG.md') or '')
     return match is not None and match[1].strip() != ''
@@ -81,6 +86,8 @@ def check(event):
     notes = [(status, path) for status, path in changes if path.startswith('changes/') and path != NOTES_README]
     if version(base) != version(head):
         # Release cut: joins the notes into CHANGELOG.md and deletes them.
+        if semver(version(head)) <= semver(version(base)):
+            raise ValueError(f'Release PR must raise the package.json version: {version(base)} -> {version(head)}')
         if any(status != 'D' for status, _ in notes):
             raise ValueError('Release PR only deletes notes from changes/')
         if left := pending_notes(head):

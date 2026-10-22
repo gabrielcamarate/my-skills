@@ -192,7 +192,11 @@ class SettingsTemplateTests(unittest.TestCase):
 
     def test_push_to_protected_branches_is_denied(self):
         for command in ("git push origin main", "git push origin staging", "git push -u origin main",
-                        "git push origin HEAD:main", "git push origin fix/1-a:staging", "git push --force origin x"):
+                        "git push origin HEAD:main", "git push origin fix/1-a:staging", "git push --force origin x",
+                        "git push origin feature/1-x:refs/heads/main", "git push -u origin fix/1-x:refs/heads/staging",
+                        "git push origin feature/1-x:heads/main", "git push origin HEAD:refs/heads/main",
+                        "git push origin feature/1-x --force", "git push origin feature/1-x --force-with-lease",
+                        "git push origin feature/1-x -f", "git push origin feature/1-x --delete"):
             with self.subTest(command=command):
                 self.assertEqual(permission(self.rules, command), "deny")
 

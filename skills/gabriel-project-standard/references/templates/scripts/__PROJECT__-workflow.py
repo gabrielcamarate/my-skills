@@ -88,6 +88,12 @@ def staging_ready(expected_sha=None, promotion=False):
     errors, warnings = [], []
     if red:
         errors.append(f"staging vermelha issues open: {red}")
+    # The reporter skips a failing run once the tip has moved on, so while merges keep
+    # landing the newest finished staging run is the red signal, not only the tip's.
+    last = gh_api(f"actions/workflows/{HEAVY_WORKFLOW}/runs?event=push&branch=staging"
+                  "&status=completed&per_page=1")["workflow_runs"][:1]
+    if last and last[0].get("head_sha") != tip and last[0].get("conclusion") != "success":
+        errors.append(f"latest finished heavy staging run {last[0].get('conclusion')} at {last[0].get('head_sha')}")
     if done and run.get("conclusion") != "success":
         errors.append(f"heavy staging suite {run.get('conclusion')} at exact tip")
     elif not done and promotion:
