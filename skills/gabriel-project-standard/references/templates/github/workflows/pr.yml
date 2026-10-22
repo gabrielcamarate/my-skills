@@ -1,6 +1,10 @@
 name: Pull Request Quality
 
-# Akita: cheap PR staging; full PR main; heavy staging runs after merge.
+# Akita: cheap PR into staging; heavy staging runs after merge (staging-quality.yml).
+# PR into main (promotion) never reruns the suite: it requires the heavy run completed
+# and green on the exact staging SHA (staging-ready --promotion) plus a strict audit.
+# The push to main then only checks that main's tree equals the approved staging tree
+# and runs the full suite only if they diverge (decision of 2026-10-22).
 on:
   # `edited` re-runs the gate when a PR base changes (e.g. staging -> main), so the fast
   # check of a staging PR can never satisfy main. No job-level `if`: skipped counts as green.
@@ -24,10 +28,8 @@ jobs:
   release-quality:
     name: release-quality
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 15
     env:
-      # Full gate everywhere except PRs into staging (fail closed: any other event is full).
-      FULL_CI: ${{ !(github.event_name == 'pull_request' && github.base_ref == 'staging') }}
       # __DUMMY_ENV__: variáveis falsas e públicas que o build/testes exigem (nunca segredos reais)
       NODE_OPTIONS: --max-old-space-size=4096
 
@@ -51,12 +53,14 @@ jobs:
               || { echo "PRs into main must come from this repository's staging"; exit 1; }
           fi
 
+      # Promotion evidence: heavy suite completed and green on the exact SHA, no red or
+      # audit-outage issue open. Replaces rerunning the full suite here.
       - name: Require green staging tip for promotion
         if: github.base_ref == 'main'
         env:
           GH_TOKEN: ${{ github.token }}
           STAGING_SHA: ${{ github.event.pull_request.head.sha }}
-        run: python3 scripts/__PROJECT__-workflow.py staging-ready --expected-sha "$STAGING_SHA"
+        run: python3 scripts/__PROJECT__-workflow.py staging-ready --expected-sha "$STAGING_SHA" --promotion
 
       - name: Verify task scope
         if: github.base_ref == 'staging'
@@ -88,48 +92,12 @@ jobs:
 
       # Promotion to main: an audit source outage blocks here until audit passes.
       - name: Dependency audit (strict)
-        if: env.FULL_CI == 'true'
+        if: github.base_ref == 'main'
         run: python3 scripts/dependency-audit.py
 
-      - name: Run supply-chain baseline
-        if: env.FULL_CI == 'true'
-        run: pnpm security:supply-chain
-
-      - name: Run OWASP evidence baseline
-        if: env.FULL_CI == 'true'
-        run: pnpm security:owasp:evidence
-
-      - name: Run automated security scans baseline
-        if: env.FULL_CI == 'true'
-        run: pnpm security:scan:automated
-
-      # `pnpm check` split so the test suite runs once (with coverage on the full gate).
+      # Cheap verifiers for task PRs only; the heavy suite runs after the staging merge.
       - name: Run release gate
+        if: github.base_ref == 'staging'
         run: |
           pnpm typecheck
           pnpm lint
-
-      - name: Run coverage gate
-        if: env.FULL_CI == 'true'
-        run: pnpm test:coverage
-
-      - name: Restore Next.js build cache
-        if: env.FULL_CI == 'true'
-        uses: actions/cache@v4
-        with:
-          path: .next/cache
-          key: nextjs-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ hashFiles('app/**', 'components/**', 'lib/**', 'next.config.ts', 'proxy.ts', 'instrumentation*.ts', 'sentry.*.config.ts') }}
-          restore-keys: |
-            nextjs-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-
-
-      - name: Run build gate
-        if: env.FULL_CI == 'true'
-        run: pnpm build
-
-      - name: Install Playwright Chromium
-        if: env.FULL_CI == 'true'
-        run: pnpm exec playwright install --with-deps chromium
-
-      - name: Run smoke e2e gate
-        if: env.FULL_CI == 'true'
-        run: pnpm e2e

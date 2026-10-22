@@ -58,8 +58,13 @@ def gh_api(path):
     return json.loads(result.stdout)
 
 
-def staging_ready(expected_sha=None):
-    """Fail closed on missing, pending, failed, stale or unreadable heavy evidence."""
+def staging_ready(expected_sha=None, promotion=False):
+    """Stop the line only on red; promotion also needs the heavy suite done and green.
+
+    Without promotion (task start, before each staging merge) a heavy run still queued or
+    in progress passes, otherwise merges queue up one by one. Red is a completed heavy run
+    without success at the exact tip or an open "staging vermelha" issue.
+    """
     tip = gh_api("git/ref/heads/staging")["object"]["sha"]
     if expected_sha and tip != expected_sha:
         return {"ok": False, "sha": tip, "errors": ["staging tip changed; refresh candidate"]}
@@ -69,27 +74,40 @@ def staging_ready(expected_sha=None):
         batch = gh_api(f"issues?state=open&per_page=100&page={page}")
         issues = [i for i in batch if not i.get("pull_request")]
         red.extend(i["number"] for i in issues if i["title"].lower().startswith("staging vermelha"))
-        # Audit outage only warns on staging; promotion waits for a passing audit.
         audit.extend(i["number"] for i in issues if i["title"].lower().startswith("audit indisponível"))
         if len(batch) < 100:
             break
     else:
         return {"ok": False, "errors": ["issue pagination limit reached"]}
     runs = gh_api(f"actions/workflows/{HEAVY_WORKFLOW}/runs?event=push&head_sha={tip}&per_page=100")["workflow_runs"]
+    runs = [r for r in runs if r.get("head_sha") == tip and r.get("event") == "push"
+            and r.get("path") == f".github/workflows/{HEAVY_WORKFLOW}"]
     # The API's run is updated in place on rerun (including run_attempt/status).
     run = max(runs, key=lambda item: item["id"], default={})
-    errors = []
+    done = run.get("status") == "completed"
+    errors, warnings = [], []
     if red:
         errors.append(f"staging vermelha issues open: {red}")
+    # The reporter skips a failing run once the tip has moved on, so while merges keep
+    # landing the newest finished staging run is the red signal, not only the tip's.
+    last = gh_api(f"actions/workflows/{HEAVY_WORKFLOW}/runs?event=push&branch=staging"
+                  "&status=completed&per_page=1")["workflow_runs"][:1]
+    if last and last[0].get("head_sha") != tip and last[0].get("conclusion") != "success":
+        errors.append(f"latest finished heavy staging run {last[0].get('conclusion')} at {last[0].get('head_sha')}")
+    if done and run.get("conclusion") != "success":
+        errors.append(f"heavy staging suite {run.get('conclusion')} at exact tip")
+    elif not done and promotion:
+        errors.append("promotion needs the heavy staging suite completed and green at exact tip")
+    elif not done:
+        warnings.append("heavy staging suite still running or not started at tip")
+    # Audit outage only warns on staging; promotion waits for a passing audit.
     if audit:
-        errors.append(f"audit indisponível issues open (audit must pass before promotion): {audit}")
-    if not (run.get("head_sha") == tip and run.get("event") == "push"
-            and run.get("path") == f".github/workflows/{HEAVY_WORKFLOW}"
-            and run.get("status") == "completed" and run.get("conclusion") == "success"):
-        errors.append("heavy staging suite missing, pending or unsuccessful at exact tip")
+        (errors if promotion else warnings).append(
+            f"audit indisponível issues open (audit must pass before promotion): {audit}")
     if gh_api("git/ref/heads/staging")["object"]["sha"] != tip:
         errors.append("staging tip changed during verification")
-    return {"ok": not errors, "sha": tip, "run": run.get("html_url"), "errors": errors}
+    return {"ok": not errors, "sha": tip, "promotion": promotion, "run": run.get("html_url"),
+            "run_status": run.get("status"), "errors": errors, "warnings": warnings}
 
 
 def start(root, resume=False):
@@ -184,6 +202,8 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("command", choices=("start", "status", "doctor", "staging-ready"))
     parser.add_argument("--expected-sha")
+    parser.add_argument("--promotion", action="store_true",
+                        help="staging-ready for the PR into main: heavy suite and audit must be green")
     parser.add_argument("--resume", action="store_true")
     parser.add_argument("--shared-skills", action="store_true")
     args = parser.parse_args()
@@ -191,9 +211,11 @@ def main():
         parser.error("--resume is only valid for start")
     if args.shared_skills and args.command != "doctor":
         parser.error("--shared-skills is only valid for doctor")
+    if args.promotion and args.command != "staging-ready":
+        parser.error("--promotion is only valid for staging-ready")
     root = Path(__file__).resolve().parent.parent
     try:
-        result = (staging_ready(args.expected_sha) if args.command == "staging-ready" else
+        result = (staging_ready(args.expected_sha, args.promotion) if args.command == "staging-ready" else
                   doctor(root, args.shared_skills) if args.command == "doctor" else
                   start(root, args.resume) if args.command == "start" else status(root))
     except (subprocess.CalledProcessError, subprocess.TimeoutExpired, OSError, ValueError, KeyError) as exc:

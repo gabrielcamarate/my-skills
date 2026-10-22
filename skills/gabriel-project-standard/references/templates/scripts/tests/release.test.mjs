@@ -1,8 +1,8 @@
 // Release tooling contract: version, changelog and tag must agree, and
-// preparation never touches the remote.
+// preparation never touches the remote. Notes live one per PR in changes/ (Maison #411).
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
@@ -10,7 +10,7 @@ import { fileURLToPath } from "node:url";
 
 const SCRIPT = fileURLToPath(new URL("../release.mjs", import.meta.url));
 
-function repo({ version = "0.1.2", changelog = "# Changelog\n\n## 0.1.2 - 2026-10-14\n\n### Changed\n\n- Algo.\n" } = {}) {
+function repo({ version = "0.1.2", changelog = "# Changelog\n\n## 0.1.2 - 2026-10-14\n\n### Changed\n\n- Algo.\n", notes = {} } = {}) {
   const dir = mkdtempSync(join(tmpdir(), "project-release-"));
   const git = (...args) => execFileSync("git", args, { cwd: dir, stdio: "pipe" }).toString().trim();
   git("init", "-q", "-b", "main");
@@ -18,6 +18,9 @@ function repo({ version = "0.1.2", changelog = "# Changelog\n\n## 0.1.2 - 2026-1
   git("config", "user.name", "t");
   writeFileSync(join(dir, "package.json"), JSON.stringify({ name: "x", version }, null, 2) + "\n");
   writeFileSync(join(dir, "CHANGELOG.md"), changelog);
+  mkdirSync(join(dir, "changes"));
+  writeFileSync(join(dir, "changes", "README.md"), "# Notas\n");
+  for (const [file, text] of Object.entries(notes)) writeFileSync(join(dir, "changes", file), text);
   git("add", ".");
   git("commit", "-qm", "init");
   return { dir, git };
@@ -62,21 +65,72 @@ test("check accepts a tag that already points to HEAD (idempotent publish)", () 
   assert.equal(run(dir, "check").code, 0);
 });
 
-test("prepare bumps version and moves Unreleased notes without creating tags", () => {
+test("prepare joins the notes by category in issue order and deletes them", () => {
   const { dir, git } = repo({
-    changelog: "# Changelog\n\n## Unreleased\n\n### Fixed\n\n- Corrige X.\n\n## 0.1.2 - 2026-10-14\n\n- Algo.\n",
+    notes: {
+      "20-cupom.md": "### Corrigido\n- Corrige cupom.\n",
+      "3-busca.md": "### Adicionado\n- Busca nova.\n",
+      "100-frete.md": "### Adicionado\n- Frete grátis.\n  Linha de continuação.\n",
+      "7-texto.md": "- Ajuste sem categoria.\n",
+    },
   });
   const result = run(dir, "prepare", "--bump", "patch", "--date", "2026-10-15");
   assert.equal(result.code, 0, result.out);
   assert.equal(JSON.parse(readFileSync(join(dir, "package.json"), "utf8")).version, "0.1.3");
   const changelog = readFileSync(join(dir, "CHANGELOG.md"), "utf8");
-  assert.match(changelog, /## Unreleased\n\n## 0\.1\.3 - 2026-10-15\n\n### Fixed\n\n- Corrige X\./);
+  assert.equal(
+    changelog,
+    "# Changelog\n\n## 0.1.3 - 2026-10-15\n\n- Ajuste sem categoria.\n\n### Adicionado\n\n- Busca nova.\n" +
+      "- Frete grátis.\n  Linha de continuação.\n\n### Corrigido\n\n- Corrige cupom.\n\n" +
+      "## 0.1.2 - 2026-10-14\n\n### Changed\n\n- Algo.\n",
+  );
+  assert.deepEqual(readdirSync(join(dir, "changes")), ["README.md"]);
   assert.equal(git("tag", "--list"), "");
+  assert.equal(run(dir, "check").code, 0);
 });
 
-test("prepare refuses an empty Unreleased section", () => {
+test("prepare refuses when changes/ has no notes", () => {
   const { dir } = repo();
   const result = run(dir, "prepare", "--bump", "patch");
+  assert.notEqual(result.code, 0);
+  assert.match(result.out, /changes\//);
+});
+
+test("two parallel PRs with different notes merge without conflict and both reach the release", () => {
+  const { dir, git } = repo();
+  for (const [branch, file, line] of [["fix/41-a", "41-a.md", "- Nota A."], ["fix/42-b", "42-b.md", "- Nota B."]]) {
+    git("checkout", "-qb", branch, "main");
+    writeFileSync(join(dir, "changes", file), `${line}\n`);
+    git("add", ".");
+    git("commit", "-qm", branch);
+  }
+  git("checkout", "-q", "main");
+  git("merge", "-q", "--no-ff", "-m", "a", "fix/41-a");
+  git("merge", "-q", "--no-ff", "-m", "b", "fix/42-b");
+  const result = run(dir, "prepare", "--bump", "minor", "--date", "2026-10-15");
+  assert.equal(result.code, 0, result.out);
+  assert.match(readFileSync(join(dir, "CHANGELOG.md"), "utf8"), /## 0\.2\.0 - 2026-10-15\n\n- Nota A\.\n- Nota B\.\n\n## 0\.1\.2/);
+});
+
+test("check refuses an invalid note name, category or line", () => {
+  for (const [file, text] of [
+    ["sem-numero.md", "- X.\n"],
+    ["5-x.md", "### Changed\n- X.\n"],
+    ["5-x.md", "Texto solto.\n"],
+    ["5-x.md", "\n"],
+    ["5-x.md", "### Adicionado\n"],
+    ["5-x.md", "- X.\n\n  continuação solta.\n"],
+  ]) {
+    const { dir } = repo({ notes: { [file]: text } });
+    const result = run(dir, "check");
+    assert.notEqual(result.code, 0, `${file}: ${JSON.stringify(text)}`);
+    assert.match(result.out, /changes\//);
+  }
+});
+
+test("check refuses notes left under '## Unreleased' in CHANGELOG.md", () => {
+  const { dir } = repo({ changelog: "# Changelog\n\n## Unreleased\n\n- Esquecida.\n\n## 0.1.2 - 2026-10-14\n\n- Algo.\n" });
+  const result = run(dir, "check");
   assert.notEqual(result.code, 0);
   assert.match(result.out, /Unreleased/);
 });
@@ -91,16 +145,22 @@ test("notes prints only the current version section", () => {
   assert.doesNotMatch(result.out, /Velho/);
 });
 
-test("prepare keeps literal $ sequences and works when Unreleased is the last section", () => {
-  const { dir } = repo({ changelog: "# Changelog\n\n## Unreleased\n\n- Custo $& e $$ preservados.\n" });
+test("prepare keeps literal $ sequences and drops an empty Unreleased heading", () => {
+  const { dir } = repo({
+    changelog: "# Changelog\n\n## Unreleased\n\n## 0.1.2 - 2026-10-14\n\n- Y.\n",
+    notes: { "9-custo.md": "- Custo $& e $$ preservados.\n" },
+  });
   const result = run(dir, "prepare", "--bump", "minor", "--date", "2026-10-15");
   assert.equal(result.code, 0, result.out);
-  assert.match(readFileSync(join(dir, "CHANGELOG.md"), "utf8"), /## 0\.2\.0 - 2026-10-15\n\n- Custo \$& e \$\$ preservados\./);
+  const changelog = readFileSync(join(dir, "CHANGELOG.md"), "utf8");
+  assert.match(changelog, /^# Changelog\n\n## 0\.2\.0 - 2026-10-15\n\n- Custo \$& e \$\$ preservados\.\n\n## 0\.1\.2/);
+  assert.doesNotMatch(changelog, /Unreleased/);
 });
 
 test("prepare requires the --bump flag", () => {
-  const { dir } = repo({ changelog: "# Changelog\n\n## Unreleased\n\n- X.\n\n## 0.1.2 - 2026-10-14\n\n- Y.\n" });
+  const { dir } = repo({ notes: { "1-x.md": "- X.\n" } });
   assert.notEqual(run(dir, "prepare", "patch").code, 0);
+  assert.equal(existsSync(join(dir, "changes", "1-x.md")), true);
 });
 
 test("check --publish sees an annotated tag on another commit", () => {

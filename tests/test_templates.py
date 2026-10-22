@@ -159,5 +159,79 @@ class StagingReportTests(unittest.TestCase):
         self.assertEqual(self.created(self.report("failure", "vulnerable")), [f"staging vermelha: {SHA}"])
 
 
+def permission(rules, command):
+    """Claude Code precedence: deny beats ask beats allow; `:*` is a prefix, `*` any text."""
+    def matches(rule):
+        pattern = rule[len("Bash("):-1]
+        if pattern.endswith(":*"):
+            return command.startswith(pattern[:-2])
+        return re.fullmatch(".*".join(map(re.escape, pattern.split("*"))), command) is not None
+    for decision in ("deny", "ask", "allow"):
+        if any(matches(rule) for rule in rules[decision] if rule.startswith("Bash(")):
+            return decision
+    return "ask"
+
+
+class SettingsTemplateTests(unittest.TestCase):
+    """A broad `ask` silently overrides the task-branch push allows."""
+
+    rules = json.loads((TEMPLATES / "claude/settings.json").read_text())["permissions"]
+
+    def test_no_broad_push_ask(self):
+        self.assertNotIn("Bash(git push:*)", self.rules["ask"])
+
+    def test_task_branch_push_needs_no_prompt(self):
+        for command in ("git push -u origin fix/13-gate", "git push origin feature/7-x", "git push origin docs/2-a"):
+            with self.subTest(command=command):
+                self.assertEqual(permission(self.rules, command), "allow")
+
+    def test_unusual_push_asks(self):
+        for command in ("git push origin fix/13-a fix/14-b", "git -C ../other fix push origin x"):
+            with self.subTest(command=command):
+                self.assertEqual(permission(self.rules, command), "ask")
+
+    def test_merge_commit_forms_ask(self):
+        for command in ("gh pr merge 12 --merge", "gh pr merge 12 -m", "gh pr merge 12 -dm", "gh pr merge 12 -md",
+                        "gh pr merge -dm 12", "gh pr merge 12 --merge --match-head-commit abc"):
+            with self.subTest(command=command):
+                self.assertEqual(permission(self.rules, command), "ask")
+
+    def test_squash_merges_need_no_prompt(self):
+        for command in ("gh pr merge 12 --squash", "gh pr merge 12 --squash --match-head-commit abc",
+                        "gh pr merge 12 --squash --delete-branch", "gh pr merge 12 --squash -d"):
+            with self.subTest(command=command):
+                self.assertEqual(permission(self.rules, command), "allow")
+
+    def test_push_to_protected_branches_is_denied(self):
+        for command in ("git push origin main", "git push origin staging", "git push -u origin main",
+                        "git push origin HEAD:main", "git push origin fix/1-a:staging", "git push --force origin x",
+                        "git push origin feature/1-x:refs/heads/main", "git push -u origin fix/1-x:refs/heads/staging",
+                        "git push origin feature/1-x:heads/main", "git push origin HEAD:refs/heads/main",
+                        "git push origin feature/1-x --force", "git push origin feature/1-x --force-with-lease",
+                        "git push origin feature/1-x -f", "git push origin feature/1-x --delete"):
+            with self.subTest(command=command):
+                self.assertEqual(permission(self.rules, command), "deny")
+
+
+class PromotionTemplateTests(unittest.TestCase):
+    """Promotion reuses the heavy staging evidence instead of rerunning the suite."""
+
+    pr = (TEMPLATES / "github/workflows/pr.yml").read_text()
+
+    def test_promotion_checks_exact_green_staging_and_strict_audit(self):
+        self.assertIn('staging-ready --expected-sha "$STAGING_SHA" --promotion', self.pr)
+        audit = re.search(r"- name: Dependency audit \(strict\)\n(.*?)\n\n", self.pr, re.S).group(1)
+        self.assertIn("github.base_ref == 'main'", audit)
+        self.assertNotIn("--soft-unavailable", audit)
+
+    def test_pr_to_main_does_not_run_the_full_suite(self):
+        for step in ("pnpm test:coverage", "pnpm build", "pnpm e2e", "playwright install", "FULL_CI"):
+            with self.subTest(step=step):
+                self.assertNotIn(step, self.pr)
+
+    def test_promotion_source_is_own_staging(self):
+        self.assertIn('[[ $HEAD_REF == staging && $HEAD_REPO == "$GITHUB_REPOSITORY" ]]', self.pr)
+
+
 if __name__ == "__main__":
     unittest.main()
