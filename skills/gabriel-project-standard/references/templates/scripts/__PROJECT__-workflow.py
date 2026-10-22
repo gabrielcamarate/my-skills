@@ -64,12 +64,14 @@ def staging_ready(expected_sha=None):
     if expected_sha and tip != expected_sha:
         return {"ok": False, "sha": tip, "errors": ["staging tip changed; refresh candidate"]}
     # Search is indexed asynchronously; list issues directly and paginate instead.
-    red = []
+    red, audit = [], []
     for page in range(1, 101):
-        issues = gh_api(f"issues?state=open&per_page=100&page={page}")
-        red.extend(i["number"] for i in issues if not i.get("pull_request")
-                   and i["title"].lower().startswith("staging vermelha"))
-        if len(issues) < 100:
+        batch = gh_api(f"issues?state=open&per_page=100&page={page}")
+        issues = [i for i in batch if not i.get("pull_request")]
+        red.extend(i["number"] for i in issues if i["title"].lower().startswith("staging vermelha"))
+        # Audit outage only warns on staging; promotion waits for a passing audit.
+        audit.extend(i["number"] for i in issues if i["title"].lower().startswith("audit indisponível"))
+        if len(batch) < 100:
             break
     else:
         return {"ok": False, "errors": ["issue pagination limit reached"]}
@@ -79,6 +81,8 @@ def staging_ready(expected_sha=None):
     errors = []
     if red:
         errors.append(f"staging vermelha issues open: {red}")
+    if audit:
+        errors.append(f"audit indisponível issues open (audit must pass before promotion): {audit}")
     if not (run.get("head_sha") == tip and run.get("event") == "push"
             and run.get("path") == f".github/workflows/{HEAVY_WORKFLOW}"
             and run.get("status") == "completed" and run.get("conclusion") == "success"):

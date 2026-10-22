@@ -86,6 +86,11 @@ jobs:
       - name: Scan committed secrets
         run: pnpm security:secrets
 
+      # Promotion to main: an audit source outage blocks here until audit passes.
+      - name: Dependency audit (strict)
+        if: env.FULL_CI == 'true'
+        run: python3 scripts/dependency-audit.py
+
       - name: Run supply-chain baseline
         if: env.FULL_CI == 'true'
         run: pnpm security:supply-chain
