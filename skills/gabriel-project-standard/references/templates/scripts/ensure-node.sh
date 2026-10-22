@@ -1,9 +1,12 @@
 #!/usr/bin/env bash
-# Make the project's exact Node.js (.nvmrc and CI pin 22.20.0)
-# available as $NODE_PREFIX/bin/node. Downloads the official build from
+# Make the project's exact Node.js (.nvmrc and CI pin) available under
+# $NODE_PREFIX/lib/pinned-node/<build>/bin. Downloads the official build from
 # nodejs.org only when needed, verifies it against the published SHASUMS256.txt
-# and installs it idempotently. Never replaces a node it did not install.
+# and installs it idempotently. Never touches the shared $NODE_PREFIX/bin:
+# projects with different pins share the machine, so each process puts its own
+# pinned bin dir first on PATH (see fast-check.sh).
 #   ./scripts/ensure-node.sh          install if `node` on PATH is another version
+#   ./scripts/ensure-node.sh --bin    print the pinned bin dir (installs nothing)
 #   ./scripts/ensure-node.sh --check  only verify the version on PATH
 set -Eeuo pipefail
 
@@ -14,19 +17,6 @@ case "$NODE_DIST_URL" in https://*|file://*) ;; *) printf 'FAIL  NODE_DIST_URL m
 fail() { printf 'FAIL  %s\n' "$1" >&2; exit 1; }
 
 path_version() { node --version 2>/dev/null || true; }
-
-case "${1:-}" in
-  '') ;;
-  --check)
-    found=$(path_version)
-    [[ "$found" == "v$NODE_VERSION" ]] \
-      || fail "Node $NODE_VERSION is required, found ${found:-none}; run ./scripts/cloud-setup.sh and put $NODE_PREFIX/bin first on PATH"
-    exit 0 ;;
-  *) printf 'usage: %s [--check]\n' "$0" >&2; exit 2 ;;
-esac
-
-[[ "$(path_version)" == "v$NODE_VERSION" ]] && exit 0
-
 platform() {
   local os arch
   case "$(uname -s)" in Linux) os=linux ;; Darwin) os=darwin ;; *) fail "unsupported OS $(uname -s)" ;; esac
@@ -41,12 +31,19 @@ sha256() {
 NAME="node-v$NODE_VERSION-${NODE_DIST_PLATFORM:-$(platform)}"
 INSTALL_ROOT="$NODE_PREFIX/lib/pinned-node"
 INSTALL_DIR="$INSTALL_ROOT/$NAME"
-BIN_DIR="$NODE_PREFIX/bin"
 
-owned_or_absent() { [[ ! -e "$1" && ! -L "$1" ]] || [[ -L "$1" && "$(readlink "$1")" == "$INSTALL_ROOT/"* ]]; }
-for tool in node npm npx corepack; do
-  owned_or_absent "$BIN_DIR/$tool" || fail "refusing to replace $BIN_DIR/$tool, which this script did not install"
-done
+case "${1:-}" in
+  '') ;;
+  --bin) printf '%s\n' "$INSTALL_DIR/bin"; exit 0 ;;
+  --check)
+    found=$(path_version)
+    [[ "$found" == "v$NODE_VERSION" ]] \
+      || fail "Node $NODE_VERSION is required, found ${found:-none}; run ./scripts/cloud-setup.sh and prepend $INSTALL_DIR/bin to PATH (./scripts/ensure-node.sh --bin)"
+    exit 0 ;;
+  *) printf 'usage: %s [--bin|--check]\n' "$0" >&2; exit 2 ;;
+esac
+
+[[ "$(path_version)" == "v$NODE_VERSION" ]] && exit 0
 
 installed() { [[ -x "$INSTALL_DIR/bin/node" && "$("$INSTALL_DIR/bin/node" --version 2>/dev/null)" == "v$NODE_VERSION" ]]; }
 
@@ -65,14 +62,9 @@ if ! installed; then
   [[ "$actual" == "$expected" ]] || fail "SHA256 mismatch for $ARCHIVE (expected $expected, got $actual)"
   tar --no-same-owner -xzf "$TMP/$ARCHIVE" -C "$TMP"
   [[ "$("$TMP/$NAME/bin/node" --version)" == "v$NODE_VERSION" ]] || fail "$ARCHIVE does not contain Node $NODE_VERSION"
-  rm -rf -- "$INSTALL_DIR"
-  mv -- "$TMP/$NAME" "$INSTALL_DIR"
+  # Another session may finish the same install first; keep whichever landed.
+  installed || { rm -rf -- "$INSTALL_DIR"; mv -- "$TMP/$NAME" "$INSTALL_DIR" 2>/dev/null || true; }
+  installed || fail "unable to install $INSTALL_DIR"
 fi
 
-mkdir -p -- "$BIN_DIR"
-for tool in node npm npx corepack; do
-  [[ -e "$INSTALL_DIR/bin/$tool" ]] || continue
-  ln -sfn -- "$INSTALL_DIR/bin/$tool" "$BIN_DIR/$tool"
-done
-
-printf 'PASS  Node %s at %s\n' "$NODE_VERSION" "$BIN_DIR/node"
+printf 'PASS  Node %s at %s\n' "$NODE_VERSION" "$INSTALL_DIR/bin/node"

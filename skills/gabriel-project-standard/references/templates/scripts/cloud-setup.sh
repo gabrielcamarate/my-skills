@@ -9,8 +9,10 @@ NODE_PREFIX=${NODE_PREFIX:-$HOME/.local}
 fail() { printf 'FAIL  %s\n' "$1" >&2; exit 1; }
 
 # Exact Node from .nvmrc; installs the verified official build only when needed.
+# Only this process gets it first on PATH; fast-check.sh does the same.
 "$ROOT_DIR/scripts/ensure-node.sh"
-export PATH="$NODE_PREFIX/bin:$PATH"
+PATH="$("$ROOT_DIR/scripts/ensure-node.sh" --bin):$PATH"
+export PATH
 
 if [[ "$(pnpm --version 2>/dev/null || true)" != "$PNPM_VERSION" ]]; then
   PNPM_PREFIX=${PNPM_PREFIX:-$NODE_PREFIX}
@@ -27,6 +29,5 @@ if [[ "${CLAUDE_CODE_REMOTE:-}" == true ]]; then
 fi
 
 (cd "$ROOT_DIR" && pnpm install --frozen-lockfile)
-"$ROOT_DIR/scripts/ensure-node.sh" --check \
-  || fail "put $NODE_PREFIX/bin first on PATH so the pinned Node is used"
+"$ROOT_DIR/scripts/ensure-node.sh" --check
 printf 'PASS  environment ready; next: ./scripts/fast-check.sh\n'
