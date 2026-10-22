@@ -1,12 +1,39 @@
-import os
+import json
 import re
 import shutil
 import subprocess
+import sys
 import tempfile
+import textwrap
 import unittest
 from pathlib import Path
 
-SCRIPTS = Path(__file__).resolve().parents[1] / "skills/gabriel-project-standard/references/templates/scripts"
+TEMPLATES = Path(__file__).resolve().parents[1] / "skills/gabriel-project-standard/references/templates"
+SCRIPTS = TEMPLATES / "scripts"
+SHA = "b" * 40
+
+# Stands in for `gh api`: answers reads from a fixture, logs every write.
+FAKE_GH = r"""#!/usr/bin/env python3
+import json, os, sys
+args = sys.argv[1:]
+path = args[1].split("/", 3)[3]
+method = args[args.index("--method") + 1]
+data = json.load(sys.stdin) if "--input" in args else None
+if method != "GET":
+    with open(os.environ["GH_LOG"], "a") as log:
+        log.write(json.dumps({"method": method, "path": path, "data": data}) + "\n")
+    print("{}")
+elif path == "git/ref/heads/staging":
+    print(json.dumps({"object": {"sha": os.environ["GITHUB_SHA"]}}))
+elif path.startswith("issues?"):
+    print(os.environ["OPEN_ISSUES"] if "page=1" in path else "[]")
+elif "/jobs" in path:
+    ok = os.environ["QUALITY_RESULT"] == "success"
+    print(json.dumps({"jobs": [{"name": "staging-quality", "conclusion": "success" if ok else "failure",
+                                "html_url": "job", "steps": []}]}))
+else:
+    print(json.dumps({"run_attempt": 1}))
+"""
 
 FAKE_PNPM = r"""#!/bin/sh
 echo "$PWD pnpm $*" >> "$PNPM_LOG"
@@ -29,6 +56,11 @@ class TemplateScriptTests(unittest.TestCase):
 
     def test_share_machine(self):
         self.run_script("test-share-machine.sh")
+
+    def test_template_python_contracts(self):
+        result = subprocess.run([sys.executable, "-m", "unittest", "discover", "-s", str(SCRIPTS / "tests"),
+                                 "-p", "test_*.py"], capture_output=True, text=True, timeout=120)
+        self.assertEqual(result.returncode, 0, result.stderr)
 
 
 class FastCheckTests(unittest.TestCase):
@@ -90,6 +122,41 @@ class FastCheckTests(unittest.TestCase):
         tests = [line for line in self.log.read_text().splitlines() if " pnpm test " in line]
         self.assertEqual(len(tests), 1)
         self.assertNotIn("--maxWorkers", tests[0])
+
+
+class StagingReportTests(unittest.TestCase):
+    """The staging reporter: an audit outage warns and never stops the line."""
+
+    def report(self, quality, audit, issues=()):
+        workflow = (TEMPLATES / "github/workflows/staging-quality.yml").read_text()
+        script = textwrap.dedent(re.search(r"python3 - <<'PY'\n(.*?)\n *PY\n", workflow, re.S).group(1))
+        with tempfile.TemporaryDirectory() as tmp:
+            gh = Path(tmp, "gh")
+            gh.write_text(FAKE_GH)
+            gh.chmod(0o755)
+            log = Path(tmp, "gh.log")
+            env = {"PATH": f"{tmp}:/usr/bin:/bin", "GH_LOG": str(log), "GITHUB_REPOSITORY": "o/r",
+                   "GITHUB_SHA": SHA, "GITHUB_RUN_ID": "7", "GITHUB_RUN_ATTEMPT": "1",
+                   "QUALITY_RESULT": quality, "AUDIT_RESULT": audit, "OPEN_ISSUES": json.dumps(list(issues))}
+            result = subprocess.run([sys.executable, "-c", script], env=env, capture_output=True, text=True, timeout=30)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            return [json.loads(line) for line in log.read_text().splitlines()] if log.exists() else []
+
+    def created(self, writes):
+        return [w["data"]["title"] for w in writes if w["method"] == "POST" and w["path"] == "issues"]
+
+    def test_audit_outage_warns_without_red_staging(self):
+        writes = self.report("success", "unavailable")
+        self.assertEqual(self.created(writes), [f"audit indisponível: {SHA}"])
+        self.assertEqual(writes[0]["data"]["labels"], ["audit-indisponivel"])
+
+    def test_passing_audit_closes_the_warning(self):
+        writes = self.report("success", "ok", [{"number": 5, "title": "audit indisponível: old"}])
+        self.assertIn({"method": "PATCH", "path": "issues/5", "data": {"state": "closed"}}, writes)
+        self.assertEqual(self.created(writes), [])
+
+    def test_failed_suite_is_still_red(self):
+        self.assertEqual(self.created(self.report("failure", "vulnerable")), [f"staging vermelha: {SHA}"])
 
 
 if __name__ == "__main__":

@@ -17,6 +17,8 @@ jobs:
     name: staging-quality
     runs-on: ubuntu-latest
     timeout-minutes: 25
+    outputs:
+      audit: ${{ steps.audit.outputs.audit }}
     env:
       # __DUMMY_ENV__: variáveis falsas e públicas que o build/testes exigem (nunca segredos reais)
       NODE_OPTIONS: --max-old-space-size=4096
@@ -51,6 +53,13 @@ jobs:
 
       - name: Scan committed secrets
         run: pnpm security:secrets
+
+      # A vulnerability is red; an audit source outage only warns here (issue
+      # "audit indisponível") and promotion to main runs the audit strict.
+      # Keep `pnpm audit` out of security:supply-chain so it runs only here.
+      - name: Dependency audit
+        id: audit
+        run: python3 scripts/dependency-audit.py --soft-unavailable
 
       - name: Run supply-chain baseline
         run: pnpm security:supply-chain
@@ -106,6 +115,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
           QUALITY_RESULT: ${{ needs.staging-quality.result }}
+          AUDIT_RESULT: ${{ needs.staging-quality.outputs.audit }}
         run: |
           python3 - <<'PY'
           import json
@@ -133,11 +143,13 @@ jobs:
           if not current():
               print('Obsolete run; no issue mutation')
               raise SystemExit(0)
-          issues = []
+          issues, audit_issues = [], []
           for page in range(1, 101):
               batch = api(f'issues?state=open&per_page=100&page={page}')
               issues.extend(i for i in batch if not i.get('pull_request')
                             and i['title'].lower().startswith('staging vermelha'))
+              audit_issues.extend(i for i in batch if not i.get('pull_request')
+                                  and i['title'].lower().startswith('audit indisponível'))
               if len(batch) < 100:
                   break
           else:
@@ -158,6 +170,19 @@ jobs:
                   number = issue['number']
                   api(f'issues/{number}/comments', 'POST', {'body': 'Staging recuperada.\n' + body})
                   api(f'issues/{number}', 'PATCH', {"state": "closed"})
+              # Audit source outage: warning only; staging-ready blocks promotion while it is open.
+              audit = os.environ.get('AUDIT_RESULT', '')
+              if audit == 'unavailable':
+                  title = f'audit indisponível: {sha}'
+                  text = 'Fonte do audit indisponível; a linha segue, a promoção espera o audit passar.\n' + body
+                  if audit_issues:
+                      api(f'issues/{audit_issues[0]["number"]}', 'PATCH', {'title': title, 'body': text})
+                  else:
+                      api('issues', 'POST', {'title': title, 'body': text, 'labels': ['audit-indisponivel']})
+              elif audit == 'ok':
+                  for issue in audit_issues:
+                      api(f'issues/{issue["number"]}/comments', 'POST', {'body': 'Audit voltou a passar.\n' + body})
+                      api(f'issues/{issue["number"]}', 'PATCH', {"state": "closed"})
           else:
               title = f'staging vermelha: {sha}'
               if issues:
