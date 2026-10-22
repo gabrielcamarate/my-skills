@@ -7,12 +7,16 @@
 //                                 after a promotion); --publish (release.yml)
 //                                 requires the tag to be absent or on HEAD.
 //   prepare --bump patch|minor|major [--date YYYY-MM-DD]
-//                                 move "## Unreleased" notes into a new version
+//                                 fold the changes/<N>-<slug>.md notes (and any
+//                                 "## Unreleased" notes) into a new version,
+//                                 merging "### Section" headings, then delete
+//                                 the note files (the release PR commits both)
 //   notes                         print the current version's changelog section
 // Publication (tag + GitHub Release) is done by .github/workflows/release.yml
 // after a push to main; this script never pushes or creates remote state.
 import { execFileSync } from "node:child_process";
-import { readFileSync, writeFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, unlinkSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
 
 const SEMVER = /^(\d+)\.(\d+)\.(\d+)$/;
 const SECTION = /^## (\d+\.\d+\.\d+) - (\d{4}-\d{2}-\d{2})\s*$/m;
@@ -67,6 +71,35 @@ function check(args = []) {
   process.stdout.write(`PASS\tversion\t${version}\n`);
 }
 
+// changes/<N>-<slug>.md, oldest issue first; .gitkeep and README stay.
+function changeNotes() {
+  if (!existsSync("changes")) return [];
+  return readdirSync("changes")
+    .filter((name) => /^\d+-.+\.md$/.test(name))
+    .sort((a, b) => parseInt(a, 10) - parseInt(b, 10) || a.localeCompare(b))
+    .map((name) => join("changes", name));
+}
+
+// Merge notes by "### Heading" in first-seen order; lines before any heading lead.
+function mergeNotes(texts) {
+  const sections = new Map([["", []]]);
+  for (const text of texts) {
+    let heading = "";
+    for (const line of text.split("\n")) {
+      const match = line.match(/^### (.+?)\s*$/);
+      if (match) heading = match[1];
+      else if (line.trim()) {
+        if (!sections.has(heading)) sections.set(heading, []);
+        sections.get(heading).push(line);
+      }
+    }
+  }
+  return [...sections]
+    .filter(([, lines]) => lines.length)
+    .map(([heading, lines]) => (heading ? `### ${heading}\n\n` : "") + lines.join("\n"))
+    .join("\n\n");
+}
+
 function prepare(args) {
   const bumpIndex = args.indexOf("--bump");
   const bump = bumpIndex === -1 ? undefined : args[bumpIndex + 1];
@@ -86,17 +119,22 @@ function prepare(args) {
 
   const changelog = readFileSync("CHANGELOG.md", "utf8");
   const match = changelog.match(/^## Unreleased[ \t]*\n([\s\S]*?)(?=^## |(?![\s\S]))/m);
-  if (!match || match[1].trim() === "") fail("CHANGELOG.md needs notes under '## Unreleased'");
-  const updated = changelog.replace(
-    match[0],
-    () => `## Unreleased\n\n## ${version} - ${date}\n\n${match[1].trim()}\n\n`,
-  );
+  const files = changeNotes();
+  const body = mergeNotes([match?.[1] ?? "", ...files.map((file) => readFileSync(file, "utf8"))]);
+  if (body === "") fail("no notes: add changes/<N>-<slug>.md (or notes under '## Unreleased')");
+  const entry = `## ${version} - ${date}\n\n${body}\n\n`;
+  const updated = match
+    ? changelog.replace(match[0], () => `## Unreleased\n\n${entry}`)
+    : changelog.match(/^## /m)
+      ? changelog.replace(/^## /m, () => `${entry}## `)
+      : `${changelog.trimEnd()}\n\n${entry}`;
 
   const pkgText = readFileSync("package.json", "utf8");
   const pkg = JSON.parse(pkgText);
   pkg.version = version;
   writeFileSync("package.json", `${JSON.stringify(pkg, null, 2)}\n`);
   writeFileSync("CHANGELOG.md", updated);
+  for (const file of files) unlinkSync(file);
   process.stdout.write(`PREPARED_NOT_PUBLISHED\t${version}\n`);
 }
 

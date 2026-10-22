@@ -10,7 +10,7 @@ import subprocess
 def check(event):
     pr = event['pull_request']
     branch = pr['head']['ref']
-    match = re.fullmatch(r'(feature|fix|chore|docs|test|refactor)/(\d+)-[a-z0-9-]+', branch)
+    match = re.fullmatch(r'(feature|fix|chore|docs|test|refactor|release)/(\d+)-[a-z0-9-]+', branch)
     if not match or not re.search(rf'\bRefs #{match[2]}\b', pr.get('body') or ''):
         raise ValueError('Task branch must identify an issue and PR body must contain Refs #N')
     if re.search(r'(?i)\b(close[sd]?|fix(e[sd])?|resolve[sd]?)\s+#\d+', pr.get('body') or ''):
@@ -24,10 +24,18 @@ def check(event):
         raise ValueError('Empty task')
     if any(Path(p).name.startswith('.env') and Path(p).name != '.env.example' for p in paths):
         raise ValueError('Environment files are outside PR scope')
-    # Only CHANGELOG is mandatory: requiring README in every PR makes parallel PRs conflict.
-    if 'CHANGELOG.md' not in paths:
-        raise ValueError('Task requires CHANGELOG.md')
-
+    # One note per task in changes/: parallel PRs never touch the same file. Only the
+    # release PR folds the notes into CHANGELOG.md (release.mjs prepare) and deletes them.
+    if match[1] == 'release':
+        if 'CHANGELOG.md' not in paths:
+            raise ValueError('Release PR requires CHANGELOG.md (node scripts/release.mjs prepare)')
+        return
+    if 'CHANGELOG.md' in paths:
+        raise ValueError('Only the release PR edits CHANGELOG.md; add a changes/<N>-<slug>.md note instead')
+    added = subprocess.check_output(['git', 'diff', '--name-only', '--diff-filter=d', base, head, '--', 'changes/'],
+                                    text=True, timeout=30).splitlines()
+    if not any(re.fullmatch(rf'changes/{match[2]}-[a-z0-9-]+\.md', p) for p in added):
+        raise ValueError(f'Task requires a change note: changes/{match[2]}-<slug>.md')
 
 if __name__ == '__main__':
     check(json.loads(Path(os.environ['GITHUB_EVENT_PATH']).read_text()))

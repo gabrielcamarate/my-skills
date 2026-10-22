@@ -72,6 +72,46 @@ class DependencyAuditTest(unittest.TestCase):
         result = self.audit(json.dumps(CLEAN), args=["--", "--audit-level=high", "--prod"])
         self.assertIn("audit --json --audit-level=high --prod", result.args_seen)
 
+    def test_default_scope_is_prod_moderate(self):
+        self.assertIn("audit --json --prod --audit-level moderate", self.audit(json.dumps(CLEAN)).args_seen)
+
+    # pnpm 10 `audit --json` exits 1 on any advisory and ignores --audit-level.
+    def test_only_low_advisory_passes_default_level(self):
+        result = self.audit(json.dumps(counts(low=1)), code=1)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("audit=ok", result.github_output)
+
+    def test_moderate_advisory_is_red_at_default_level(self):
+        result = self.audit(json.dumps(counts(moderate=1)), code=1)
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("audit=vulnerable", result.github_output)
+
+    def test_level_from_project_args(self):
+        for args in (["--", "--audit-level=high"], ["--", "--prod", "--audit-level", "high"]):
+            with self.subTest(args=args):
+                self.assertIn("audit=ok", self.audit(json.dumps(counts(moderate=3)), code=1, args=args).github_output)
+                self.assertIn("audit=vulnerable",
+                              self.audit(json.dumps(counts(critical=1)), code=1, args=args).github_output)
+
+    def test_unreadable_counts_fail_closed(self):
+        for report in ({"advisories": {}}, {"metadata": {}}, {"metadata": {"vulnerabilities": counts(high="1")
+                                                                                 ["metadata"]["vulnerabilities"]}},
+                       {"metadata": {"vulnerabilities": {"low": 0}}}):
+            with self.subTest(report=report):
+                result = self.audit(json.dumps(report), code=0, args=["--soft-unavailable"])
+                self.assertEqual(result.returncode, 1)
+                self.assertIn("audit=failed", result.github_output)
+
+    def test_unexpected_exit_code_is_an_execution_failure(self):
+        result = self.audit(json.dumps(CLEAN), code=2, args=["--soft-unavailable"])
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("audit=failed", result.github_output)
+
+
+def counts(**found):
+    levels = {"info": 0, "low": 0, "moderate": 0, "high": 0, "critical": 0, **found}
+    return {"advisories": {}, "metadata": {"vulnerabilities": levels}}
+
 
 if __name__ == "__main__":
     unittest.main()

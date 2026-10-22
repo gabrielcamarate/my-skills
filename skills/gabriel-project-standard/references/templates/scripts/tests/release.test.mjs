@@ -2,7 +2,7 @@
 // preparation never touches the remote.
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
@@ -124,4 +124,32 @@ test("check passes on staging after the version was released from a main merge c
   const result = run(dir, "check");
   assert.equal(result.code, 0, result.out);
   assert.match(result.out, /released/);
+});
+
+test("prepare joins changes/ notes into the version and deletes them", () => {
+  const { dir } = repo();
+  mkdirSync(join(dir, "changes"));
+  writeFileSync(join(dir, "changes", "12-audit.md"), "### Fixed\n\n- Audit respeita o nível.\n");
+  writeFileSync(join(dir, "changes", "9-gate.md"), "### Changed\n\n- Gate só para no vermelho.\n\n### Fixed\n\n- Push sem prompt.\n");
+  writeFileSync(join(dir, "changes", "15-plain.md"), "- Nota sem seção.\n");
+  writeFileSync(join(dir, "changes", ".gitkeep"), "");
+  const result = run(dir, "prepare", "--bump", "minor", "--date", "2026-10-22");
+  assert.equal(result.code, 0, result.out);
+  const changelog = readFileSync(join(dir, "CHANGELOG.md"), "utf8");
+  assert.match(
+    changelog,
+    /## 0\.2\.0 - 2026-10-22\n\n- Nota sem seção\.\n\n### Changed\n\n- Gate só para no vermelho\.\n\n### Fixed\n\n- Push sem prompt\.\n- Audit respeita o nível\.\n\n## 0\.1\.2 - 2026-10-14/,
+  );
+  assert.equal(existsSync(join(dir, "changes", "12-audit.md")), false);
+  assert.equal(existsSync(join(dir, "changes", "9-gate.md")), false);
+  assert.equal(existsSync(join(dir, "changes", ".gitkeep")), true);
+  assert.equal(run(dir, "check").code, 0);
+});
+
+test("prepare refuses when there are no notes in changes/ or Unreleased", () => {
+  const { dir } = repo();
+  mkdirSync(join(dir, "changes"));
+  const result = run(dir, "prepare", "--bump", "patch");
+  assert.notEqual(result.code, 0);
+  assert.match(result.out, /changes\//);
 });
