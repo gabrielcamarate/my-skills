@@ -190,6 +190,18 @@ class SettingsTemplateTests(unittest.TestCase):
             with self.subTest(command=command):
                 self.assertEqual(permission(self.rules, command), "ask")
 
+    def test_merge_commit_forms_ask(self):
+        for command in ("gh pr merge 12 --merge", "gh pr merge 12 -m", "gh pr merge 12 -dm", "gh pr merge 12 -md",
+                        "gh pr merge -dm 12", "gh pr merge 12 --merge --match-head-commit abc"):
+            with self.subTest(command=command):
+                self.assertEqual(permission(self.rules, command), "ask")
+
+    def test_squash_merges_need_no_prompt(self):
+        for command in ("gh pr merge 12 --squash", "gh pr merge 12 --squash --match-head-commit abc",
+                        "gh pr merge 12 --squash --delete-branch", "gh pr merge 12 --squash -d"):
+            with self.subTest(command=command):
+                self.assertEqual(permission(self.rules, command), "allow")
+
     def test_push_to_protected_branches_is_denied(self):
         for command in ("git push origin main", "git push origin staging", "git push -u origin main",
                         "git push origin HEAD:main", "git push origin fix/1-a:staging", "git push --force origin x",

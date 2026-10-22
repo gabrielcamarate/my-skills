@@ -7,6 +7,7 @@ from pathlib import Path
 
 SCRIPT = Path(__file__).resolve().parents[1] / "check-pr-scope.py"
 LOG = "# Changelog\n\n## 0.1.4 - 2026-10-15\n\n- X.\n"
+RELEASE_BODY = "Refs #20\nSecurity-Review: version bump only"
 OLD_LOG = "# Changelog\n\n## Unreleased\n\n- Antiga.\n\n## 0.1.4 - 2026-10-15\n\n- X.\n"
 
 
@@ -89,22 +90,46 @@ class CheckPrScopeTest(unittest.TestCase):
     def test_version_bump_is_the_release_and_consumes_every_note(self):
         bump = {"package.json": '{"version": "0.1.5"}\n', "CHANGELOG.md": "# Changelog\n\n## 0.1.5 - 2026-10-22\n"}
         notes = ["7-a.md", "9-b.md"]
-        ok = self.scope(bump, ["changes/7-a.md", "changes/9-b.md"], branch="chore/20-release", notes=notes)
+        ok = self.scope(bump, ["changes/7-a.md", "changes/9-b.md"], branch="chore/20-release", notes=notes,
+                        body=RELEASE_BODY)
         self.assertEqual(ok.returncode, 0, ok.stderr)
         self.setUp()
-        self.assertRefused(self.scope(bump, ["changes/7-a.md"], branch="chore/20-release", notes=notes), "9-b")
+        self.assertRefused(self.scope(bump, ["changes/7-a.md"], branch="chore/20-release", notes=notes,
+                                      body=RELEASE_BODY), "9-b")
         self.setUp()
-        self.assertRefused(self.scope({**bump, "changes/20-x.md": "- X.\n"}, branch="chore/20-release"))
+        self.assertRefused(self.scope({**bump, "changes/20-x.md": "- X.\n"}, branch="chore/20-release",
+                                      body=RELEASE_BODY))
 
     def test_release_must_raise_the_version(self):
         for version in ("0.1.3", "0.1.4-rc.1", "x"):
             with self.subTest(version=version):
                 self.setUp()
                 result = self.scope({"package.json": f'{{"version": "{version}"}}\n', "lib/a.ts": "a\n"},
-                                    branch="chore/20-release")
+                                    branch="chore/20-release", body=RELEASE_BODY)
                 self.assertRefused(result, "version")
         self.setUp()
-        self.assertRefused(self.scope({"lib/a.ts": "a\n"}, ["package.json"], branch="chore/20-release"))
+        self.assertRefused(self.scope({"lib/a.ts": "a\n"}, ["package.json"], branch="chore/20-release",
+                                      body=RELEASE_BODY))
+
+    def test_sensitive_paths_require_a_security_review_line(self):
+        for path in (".github/workflows/pr.yml", "scripts/fast-check.sh", "package.json"):
+            with self.subTest(path=path):
+                self.setUp()
+                files = {path: '{"version": "0.1.4", "scripts": {}}\n' if path == "package.json" else "x\n",
+                         "changes/12-a.md": "- A.\n"}
+                self.assertRefused(self.scope(files), "Security-Review:")
+                self.setUp()
+                for body in ("Refs #12\nSecurity-Review:", "Refs #12\nSecurity-Review:   ", "Refs #12 Security-Review: x"):
+                    with self.subTest(body=body):
+                        self.setUp()
+                        self.assertRefused(self.scope(files, body=body), "Security-Review:")
+                self.setUp()
+                ok = self.scope(files, body="Refs #12\n\nSecurity-Review: no new token, gate or permission\n")
+                self.assertEqual(ok.returncode, 0, ok.stderr)
+
+    def test_release_bump_also_needs_the_security_review_line(self):
+        bump = {"package.json": '{"version": "0.1.5"}\n', "CHANGELOG.md": "# Changelog\n\n## 0.1.5 - 2026-10-22\n"}
+        self.assertRefused(self.scope(bump, branch="chore/20-release"), "Security-Review:")
 
     def test_parallel_note_merged_into_staging_is_not_this_prs_change(self):
         result = self.scope({"changes/12-a.md": "- A.\n"}, staging_after={"changes/600-b.md": "- B.\n"})

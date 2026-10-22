@@ -76,7 +76,9 @@
       "Bash(gh pr merge * --merge*)",
       "Bash(gh pr merge --merge*)",
       "Bash(gh pr merge * -m*)",
-      "Bash(gh pr merge -m*)"
+      "Bash(gh pr merge -m*)",
+      "Bash(gh pr merge * -dm*)",
+      "Bash(gh pr merge -dm*)"
     ],
     "deny": [
       "Bash(docker system prune:*)",

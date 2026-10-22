@@ -15,6 +15,7 @@ import subprocess
 NOTE = re.compile(r'changes/(\d+)-[a-z0-9]+(?:-[a-z0-9]+)*\.md')
 NOTES_README = 'changes/README.md'
 LEGACY_NOTE = 'changes/0-unreleased-legacy.md'
+SECURITY_REVIEW = re.compile(r'^Security-Review:[ \t]*\S', re.M)
 UNRELEASED = re.compile(r'^## Unreleased[ \t]*\n(.*?)(?=^## |\Z)', re.M | re.S)
 
 
@@ -83,6 +84,10 @@ def check(event):
         raise ValueError('Empty task')
     if any(Path(p).name.startswith('.env') and Path(p).name != '.env.example' for p in paths):
         raise ValueError('Environment files are outside PR scope')
+    # A PR runs its own CI, gates and package scripts (accepted risk): make it say why that is safe.
+    if any(p.startswith(('.github/', 'scripts/')) or p == 'package.json' for p in paths) \
+            and not SECURITY_REVIEW.search(pr.get('body') or ''):
+        raise ValueError('PR touching .github/, scripts/ or package.json needs a "Security-Review: <summary>" line')
     notes = [(status, path) for status, path in changes if path.startswith('changes/') and path != NOTES_README]
     if version(base) != version(head):
         # Release cut: joins the notes into CHANGELOG.md and deletes them.
