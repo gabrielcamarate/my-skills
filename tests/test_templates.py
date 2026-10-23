@@ -456,7 +456,7 @@ class PrEditedEventTests(unittest.TestCase):
         pr = context["github"]["event"]["pull_request"]
         green = {"id": 1, "head_sha": pr["head"]["sha"], "status": "completed", "conclusion": "success",
                  "display_title": self.workflow.pr_run_title(pr), "path": ".github/workflows/pr.yml",
-                 "head_repository": pr["head"]["repo"]}
+                 "head_repository": pr["head"]["repo"], "run_started_at": "2026-10-23T00:00:00Z"}
         original = self.workflow.gh_api
         self.workflow.gh_api = lambda path: {"workflow_runs": [green]}
         try:
