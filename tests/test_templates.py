@@ -267,6 +267,72 @@ class PromotionTemplateTests(unittest.TestCase):
         self.assertIn('[[ $HEAD_REF == staging && $HEAD_REPO == "$GITHUB_REPOSITORY" ]]', self.pr)
 
 
+class MainGuardTemplateTests(unittest.TestCase):
+    """my-skills#17: main only takes the promotion merge; deploy checks its tree, never reruns."""
+
+    rulesets = (TEMPLATES.parent / "rulesets.md").read_text()
+    deploy = (TEMPLATES / "github/workflows/deploy.yml").read_text() \
+        if (TEMPLATES / "github/workflows/deploy.yml").exists() else ""
+
+    def test_main_merge_commit_only_ruleset_recipe(self):
+        recipe = re.search(r"```bash\n(R=[^`]*?Promoção: main só merge commit[^`]*)```", self.rulesets)
+        self.assertIsNotNone(recipe, "missing ruleset recipe")
+        body = re.search(r"<<J\n(.*?)\nJ\n", recipe.group(1), re.S).group(1).replace("$R", "o/r")
+        ruleset = json.loads(body)
+        self.assertEqual(ruleset["conditions"]["ref_name"]["include"], ["refs/heads/main"])
+        self.assertEqual(ruleset["enforcement"], "active")
+        [rule] = ruleset["rules"]
+        self.assertEqual(rule["type"], "pull_request")
+        self.assertEqual(rule["parameters"]["allowed_merge_methods"], ["merge"])
+        self.assertIn("gh api -X POST repos/$R/rulesets", recipe.group(1))
+        # The reason: squash into main skipped the merge-commit ask and could ship untested content.
+        self.assertIn("ask", self.rulesets)
+        self.assertIn("não testado", self.rulesets)
+
+    def test_deploy_checks_main_tree_before_install(self):
+        self.assertIn("main-ready --sha \"$GITHUB_SHA\"", self.deploy)
+        step = self.deploy.split("- name: Require approved staging tree", 1)[1].split("\n      - ", 1)[0]
+        self.assertIn("python3 scripts/__PROJECT__-workflow.py main-ready --sha \"$GITHUB_SHA\"", step)
+        self.assertIn("GH_TOKEN: ${{ github.token }}", step)
+        order = [self.deploy.index(name) for name in (
+            "- name: Checkout exact main commit", "- name: Require approved staging tree",
+            "- name: Install dependencies", "- name: Deploy")]
+        self.assertEqual(order, sorted(order))
+        self.assertIn("ref: ${{ github.sha }}", self.deploy)
+        self.assertIn("persist-credentials: false", self.deploy)
+        self.assertIn("actions: read", self.deploy)
+        self.assertNotIn(": write", self.deploy)
+
+    def test_deploy_never_reruns_the_suite(self):
+        for step in ("pnpm test", "pnpm e2e", "pnpm lint", "pnpm typecheck", "playwright"):
+            with self.subTest(step=step):
+                self.assertNotIn(step, self.deploy)
+
+    def test_pr_template_no_longer_promises_a_full_suite_on_main(self):
+        pr = (TEMPLATES / "github/workflows/pr.yml").read_text()
+        self.assertNotIn("runs the full suite only if they diverge", pr)
+        self.assertIn("main-ready", pr)
+
+
+class NoStagingPathTests(unittest.TestCase):
+    """my-skills#17: projects without staging skip staging and promotion (QRcode-menu#34)."""
+
+    skill = (TEMPLATES.parents[1] / "SKILL.md").read_text()
+
+    def test_no_staging_path_is_documented(self):
+        section = re.search(r"\*\*Sem staging\*\*(.*?)\n\n", self.skill, re.S)
+        self.assertIsNotNone(section, "missing no-staging path")
+        text = section.group(1)
+        for phrase in ("Padrão: staging", "promoção", "main-ready", "local", "export", "QRcode-menu#34"):
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, text)
+
+    def test_skill_states_the_main_guard_and_merge_commit_ruleset(self):
+        self.assertIn("main-ready --sha", self.skill)
+        self.assertIn("Promoção: main só merge commit", self.skill)
+        self.assertNotIn("se divergir, roda a suíte completa", self.skill)
+
+
 def gh_expr(text, context):
     """Tiny GitHub Actions expression evaluator: paths, literals, !, ==, !=, &&, ||, ()."""
     tokens = re.findall(r"'(?:[^']|'')*'|&&|\|\||==|!=|!|\(|\)|[A-Za-z_][\w.-]*", text)

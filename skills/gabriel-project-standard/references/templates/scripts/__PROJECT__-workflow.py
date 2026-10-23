@@ -9,6 +9,7 @@ import re
 import subprocess
 import sys
 import tomllib
+from urllib.parse import urlsplit
 
 LOCAL_SKILLS = ()  # skills de domínio do projeto, se houver
 SHARED_SKILLS = (
@@ -49,15 +50,76 @@ def status(root):
     }
 
 
-REPOSITORY = "__OWNER__/__REPO__"
+ROOT = Path(__file__).resolve().parent.parent
 HEAVY_WORKFLOW = "staging-quality.yml"
 PR_WORKFLOW = "pr.yml"
+REPOSITORY_NAME = re.compile(r"[A-Za-z0-9-]+/[A-Za-z0-9._-]+")
+
+
+def repository():
+    """owner/name the GitHub checks query: GITHUB_REPOSITORY in Actions, else origin (Maison #443).
+
+    Fails closed (ValueError) on a missing or non-github.com origin; the remote URL is never
+    echoed because it may carry credentials.
+    """
+    if os.environ.get("GITHUB_ACTIONS") == "true":
+        name = os.environ.get("GITHUB_REPOSITORY", "")
+    else:
+        try:
+            url = git(ROOT, "remote", "get-url", "origin")
+        except subprocess.CalledProcessError:
+            raise ValueError("origin remote missing") from None
+        scp = re.fullmatch(r"[^@/:]+@github\.com:(.+)", url)
+        parsed = urlsplit(url)
+        if scp:
+            name = scp.group(1)
+        elif parsed.scheme in ("https", "ssh") and parsed.hostname == "github.com":
+            name = parsed.path.strip("/")
+        else:
+            raise ValueError("origin is not a github.com repository")
+        name = name.removesuffix(".git")
+    if not REPOSITORY_NAME.fullmatch(name) or any(part.strip(".") == "" for part in name.split("/")):
+        raise ValueError("repository name unresolvable")
+    return name
 
 
 def gh_api(path):
-    result = subprocess.run(["gh", "api", f"repos/{REPOSITORY}/{path}"],
+    result = subprocess.run(["gh", "api", f"repos/{repository()}/{path}"],
                             capture_output=True, text=True, check=True, timeout=30)
     return json.loads(result.stdout)
+
+
+def main_ready(sha):
+    """Deploy gate for a main commit (my-skills#17, Maison #431): main is the promoted staging tip.
+
+    Promotion does not rerun the suite, so the evidence is the heavy run of that tip. Blocks,
+    without running anything, on a commit that is not a two-parent merge, a tree that differs
+    from the second parent, a tip staging no longer contains, or a heavy run that is missing,
+    pending or unsuccessful.
+    """
+    if not re.fullmatch(r"[0-9a-f]{40}", sha or ""):
+        return {"ok": False, "errors": ["main sha must be a full 40-hex commit id"]}
+    commit = gh_api(f"git/commits/{sha}")
+    parents = [item["sha"] for item in commit.get("parents", [])]
+    if len(parents) != 2:
+        return {"ok": False, "sha": sha, "errors": ["main commit is not a staging promotion merge"]}
+    # gh pr merge --merge: first parent is the previous main, second the approved staging head.
+    candidate = parents[1]
+    errors = []
+    if gh_api(f"git/commits/{candidate}")["tree"]["sha"] != commit["tree"]["sha"]:
+        errors.append("main tree diverges from the promoted staging tip")
+    # Resolve the branch first: a bare "staging" in compare could also name a tag.
+    staging = gh_api("git/ref/heads/staging")["object"]["sha"]
+    if gh_api(f"compare/{candidate}...{staging}").get("status") not in ("identical", "ahead"):
+        errors.append("promoted commit is not on staging")
+    runs = gh_api(f"actions/workflows/{HEAVY_WORKFLOW}/runs?event=push&head_sha={candidate}&per_page=100")["workflow_runs"]
+    runs = [r for r in runs if r.get("head_sha") == candidate and r.get("event") == "push"
+            and r.get("head_branch") == "staging" and r.get("path") == f".github/workflows/{HEAVY_WORKFLOW}"]
+    run = max(runs, key=lambda item: item["id"], default={})
+    if not (run.get("status") == "completed" and run.get("conclusion") == "success"):
+        errors.append("heavy staging suite missing, pending or unsuccessful at the promoted tip")
+    return {"ok": not errors, "sha": sha, "staging_sha": candidate, "run": run.get("html_url"),
+            "errors": errors}
 
 
 def staging_ready(expected_sha=None, promotion=False):
@@ -251,8 +313,9 @@ def pr_event_main():
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("command", choices=("start", "status", "doctor", "staging-ready", "pr-event"))
+    parser.add_argument("command", choices=("start", "status", "doctor", "staging-ready", "main-ready", "pr-event"))
     parser.add_argument("--expected-sha")
+    parser.add_argument("--sha", help="main commit to deploy (main-ready)")
     parser.add_argument("--promotion", action="store_true",
                         help="staging-ready for the PR into main: heavy suite and audit must be green")
     parser.add_argument("--resume", action="store_true")
@@ -264,11 +327,14 @@ def main():
         parser.error("--shared-skills is only valid for doctor")
     if args.promotion and args.command != "staging-ready":
         parser.error("--promotion is only valid for staging-ready")
-    root = Path(__file__).resolve().parent.parent
+    if (args.command == "main-ready") != bool(args.sha):
+        parser.error("main-ready requires --sha" if args.command == "main-ready" else "--sha is only valid for main-ready")
+    root = ROOT
     if args.command == "pr-event":
         return pr_event_main()
     try:
         result = (staging_ready(args.expected_sha, args.promotion) if args.command == "staging-ready" else
+                  main_ready(args.sha) if args.command == "main-ready" else
                   doctor(root, args.shared_skills) if args.command == "doctor" else
                   start(root, args.resume) if args.command == "start" else status(root))
     except (subprocess.CalledProcessError, subprocess.TimeoutExpired, OSError, ValueError, KeyError) as exc:

@@ -5,8 +5,9 @@ run-name: "PR ${{ github.event.pull_request.number }} into ${{ github.base_ref }
 # Akita: cheap PR into staging; heavy staging runs after merge (staging-quality.yml).
 # PR into main (promotion) never reruns the suite: it requires the heavy run completed
 # and green on the exact staging SHA (staging-ready --promotion) plus a strict audit.
-# The push to main then only checks that main's tree equals the approved staging tree
-# and runs the full suite only if they diverge (decision of 2026-10-22).
+# The deploy on main then runs main-ready (deploy.yml): main's tree must equal the
+# promoted green staging tip, else the deploy blocks without running the suite
+# (decisions of 2026-10-22, my-skills#17).
 on:
   # `edited` re-runs the gate when a PR base changes (e.g. staging -> main), so the fast
   # check of a staging PR can never satisfy main. A title/body edit only re-checks scope
