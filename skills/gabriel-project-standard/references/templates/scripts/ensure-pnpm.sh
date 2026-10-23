@@ -15,12 +15,15 @@ NODE_PREFIX=${NODE_PREFIX:-$HOME/.local}
 INSTALL_ROOT="$NODE_PREFIX/lib/pinned-pnpm"
 INSTALL_DIR="$INSTALL_ROOT/$PNPM_VERSION"
 fail() { printf 'FAIL  %s\n' "$1" >&2; exit 1; }
+# pnpm 10 delegates to the packageManager pin and answers its version, then
+# downloads it on first use (and hangs with an empty HOME). Ask for the real one.
+pnpm_version() { npm_config_manage_package_manager_versions=false "$1" --version 2>/dev/null || true; }
 
 case "${1:-}" in
   '') ;;
   --bin) printf '%s\n' "$INSTALL_DIR/bin"; exit 0 ;;
   --check)
-    found=$(pnpm --version 2>/dev/null || true)
+    found=$(pnpm_version pnpm)
     [[ "$found" == "$PNPM_VERSION" ]] \
       || fail "pnpm $PNPM_VERSION is required, found ${found:-none}; run ./scripts/cloud-setup.sh and prepend $INSTALL_DIR/bin to PATH (./scripts/ensure-pnpm.sh --bin)"
     exit 0 ;;
@@ -33,8 +36,8 @@ SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 PATH="$("$SCRIPT_DIR/ensure-node.sh" --bin):$PATH"
 "$SCRIPT_DIR/ensure-node.sh" --check
 
-installed() { [[ "$("$1/bin/pnpm" --version 2>/dev/null || true)" == "$PNPM_VERSION" ]]; }
-[[ "$(pnpm --version 2>/dev/null || true)" == "$PNPM_VERSION" ]] && exit 0
+installed() { [[ "$(pnpm_version "$1/bin/pnpm")" == "$PNPM_VERSION" ]]; }
+[[ "$(pnpm_version pnpm)" == "$PNPM_VERSION" ]] && exit 0
 installed "$INSTALL_DIR" && exit 0
 
 mkdir -p -- "$INSTALL_ROOT"
