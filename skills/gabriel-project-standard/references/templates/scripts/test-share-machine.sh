@@ -24,7 +24,11 @@ workers() { lib "$@" -- eval 'printf "%s" "${TEST_WORKER_ARGS[*]}"'; }
 [[ -z $(workers CI=true) ]] || fail 'CI must not cap workers'
 
 # Two heavy steps from different sessions never overlap; the second one waits and says so.
-busy=(sh -c 'mkdir "$1" || exit 9; sleep 1; rmdir "$1"' _ "$WORK/busy")
+# The step holding the lock ends only once the other session has queued, so the
+# result never depends on how fast the machine starts the second one (#20). It
+# also ends when this test exits, so a regression fails instead of hanging.
+busy=(sh -c 'mkdir "$1" || exit 9; until grep -qs wait "$2" "$3" || [ ! -d "$4" ]; do sleep 0.05; done; rmdir "$1"' _
+      "$WORK/busy" "$WORK/h1.log" "$WORK/h2.log" "$WORK")
 lib -- heavy "${busy[@]}" >"$WORK/h1.log" 2>&1 & pid1=$!
 lib -- heavy "${busy[@]}" >"$WORK/h2.log" 2>&1 & pid2=$!
 wait "$pid1" || fail "first heavy step: $(cat "$WORK/h1.log")"
@@ -32,7 +36,9 @@ wait "$pid2" || fail "second heavy step: $(cat "$WORK/h2.log")"
 grep -q 'wait' "$WORK/h1.log" "$WORK/h2.log" || fail 'the queued session must say it is waiting'
 
 # The wait is bounded: a lock held too long fails clearly and the step never runs.
-flock "$LOCK" sleep 3 & holder=$!
+# Held until released below (or this test exits), not for a fixed time a loaded
+# machine could outlast.
+flock "$LOCK" sh -c 'until [ -e "$1" ] || [ ! -d "$2" ]; do sleep 0.05; done' _ "$WORK/release" "$WORK" & holder=$!
 until ! flock -n "$LOCK" true; do sleep 0.1; done
 if out=$(lib HEAVY_LOCK_WAIT=1 -- heavy touch "$WORK/ran" 2>&1); then fail 'a held lock must time out'; fi
 [[ "$out" == *'still held'* ]] || fail "unexpected timeout output: $out"
@@ -40,6 +46,7 @@ if out=$(lib HEAVY_LOCK_WAIT=1 -- heavy touch "$WORK/ran" 2>&1); then fail 'a he
 
 # CI runners are not shared: no lock there.
 lib CI=true HEAVY_LOCK_WAIT=1 -- heavy true || fail 'CI must not wait for the machine lock'
+touch "$WORK/release"
 wait "$holder"
 
 # The step's own exit code comes back unchanged.

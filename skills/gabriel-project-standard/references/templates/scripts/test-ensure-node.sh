@@ -76,7 +76,7 @@ cp -- "$DIST/v$PINNED/SHASUMS256.txt" "$WORK/sums.ok"
 sed -i "s/^[0-9a-f]\{64\}  $NAME.tar.gz$/$(printf y | sha256sum | cut -d' ' -f1)  $NAME.tar.gz/" "$DIST/v$PINNED/SHASUMS256.txt"
 if out=$(run "$P3" "$WORK/old:$BASE_PATH" 2>&1); then fail 'checksum mismatch must fail'; fi
 [[ "$out" == *'SHA256 mismatch'* ]] || fail "unexpected mismatch output: $out"
-[[ -z $(ls -A "$P3/lib/pinned-node" 2>/dev/null) ]] || fail 'mismatch must not leave an install'
+[[ -z $(ls -A "$P3/lib/pinned-node" 2>/dev/null | grep -vxF ".$NAME.lock") ]] || fail 'mismatch must not leave an install'
 
 # Archive missing from SHASUMS256.txt fails closed.
 grep -v " $NAME.tar.gz$" "$WORK/sums.ok" > "$DIST/v$PINNED/SHASUMS256.txt"
@@ -108,13 +108,42 @@ run "$P5" "$BIN_A:$WORK/old:$BASE_PATH" --check >/dev/null || fail 'project A mu
 run_b "$P5" "$BIN_B:$WORK/old:$BASE_PATH" --check >/dev/null || fail 'project B must see its own Node'
 [[ ! -e "$P5/bin" ]] || fail 'parallel installs must not touch the shared bin dir'
 
-# The same version installed by two sessions at once: both succeed.
-P6="$WORK/p6"
-run "$P6" "$WORK/old:$BASE_PATH" >"$WORK/a1.log" 2>&1 & pid1=$!
-run "$P6" "$WORK/old:$BASE_PATH" >"$WORK/a2.log" 2>&1 & pid2=$!
-wait "$pid1" || fail "concurrent install 1: $(cat "$WORK/a1.log")"
-wait "$pid2" || fail "concurrent install 2: $(cat "$WORK/a2.log")"
-[[ $("$P6/lib/pinned-node/$NAME/bin/node" --version) == "v$PINNED" ]] || fail 'concurrent installs left a broken Node'
+# The same version installed by N sessions at once, 20 rounds: every session
+# succeeds, the install works and nothing is left behind (#23). Also without
+# flock and with a BSD-like mv (macOS), and over a broken leftover install;
+# without flock over a broken leftover a session may only fail closed.
+NOLOCK="$WORK/nolock"
+mkdir -p -- "$NOLOCK"
+for tool in /usr/bin/* /bin/*; do
+  name=${tool##*/}
+  [[ $name == flock || -L "$NOLOCK/$name" ]] || ln -s -- "$tool" "$NOLOCK/$name"
+done
+rm -f -- "$NOLOCK/mv"
+printf '#!/bin/sh\n[ "$1" = --version ] && exit 1\nexec %s "$@"\n' "$(command -v mv)" > "$NOLOCK/mv"
+chmod +x "$NOLOCK/mv"
+CONCURRENT=${CONCURRENT:-6}
+concurrent() { # label path clean|broken [may-fail-closed]
+  local round i p pids
+  for round in $(seq 20); do
+    p="$WORK/p6-$1-$round" pids=()
+    if [[ $3 == broken ]]; then mkdir -p -- "$p/lib/pinned-node/$NAME/bin"; fi
+    for i in $(seq "$CONCURRENT"); do
+      run "$p" "$WORK/old:$2" >"$WORK/c$i.log" 2>&1 & pids+=($!)
+    done
+    for i in "${!pids[@]}"; do
+      wait "${pids[$i]}" && continue
+      [[ ${4:-} == may-fail-closed && $(cat "$WORK/c$((i + 1)).log") == 'FAIL  unable to install '* ]] \
+        || fail "$1 round $round, concurrent install $((i + 1)) of $CONCURRENT: $(cat "$WORK/c$((i + 1)).log")"
+    done
+    [[ $("$p/lib/pinned-node/$NAME/bin/node" --version) == "v$PINNED" ]] || fail "$1 round $round left a broken Node"
+    [[ -z $(ls -A "$p/lib/pinned-node" | grep -vxF -e "$NAME" -e ".$NAME.lock") ]] || fail "$1 round $round left $(ls -A "$p/lib/pinned-node")"
+    [[ ! -e "$p/lib/pinned-node/$NAME/$NAME" ]] || fail "$1 round $round nested a copy inside the install"
+  done
+}
+concurrent flock "$BASE_PATH" clean
+concurrent flock-broken "$BASE_PATH" broken
+concurrent no-flock "$NOLOCK" clean
+concurrent no-flock-broken "$NOLOCK" broken may-fail-closed
 
 # --check and --bin report without installing anything.
 P7="$WORK/p7"
