@@ -120,6 +120,7 @@ out=$(run_env "$P4" env PATH="$BIN:$DELEGATING:$SHARED:$BASE_PATH" bash "$PROJEC
   || fail "install past a delegating pnpm: $out"
 [[ $(npm_runs) == 1 ]] || fail "a delegating pnpm must not skip the install: $(cat "$WORK/npm.log")"
 [[ $("$P4/lib/pinned-pnpm/$PNPM_PINNED/bin/pnpm" --version) == "$PNPM_PINNED" ]] || fail 'pinned pnpm missing past a delegating pnpm'
+! grep -q '^delegating pnpm' "$WORK/pnpm.log" || fail 'the delegating pnpm must only be asked its version'
 
 # Two sessions install the same version at once: one npm run, both succeed.
 P2="$WORK/p2"
