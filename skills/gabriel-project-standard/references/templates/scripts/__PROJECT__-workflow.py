@@ -118,28 +118,31 @@ def pr_run_title(pr):
 
 
 def pr_event(event, run_id):
-    """Decide what a pull_request run must redo (my-skills#16).
+    """Decide whether a pull_request run may reuse an earlier verdict (my-skills#16).
 
     Only a base change re-evaluates the whole gate; pr.yml cancels the old run for it.
-    A text-only `edited` (title/body) never cancels and reuses the latest finished run
-    of the same head and base when it is green; without that proof it runs the cheap
-    check again. A body edit re-checks the scope (Security-Review:, Refs #N).
+    A text-only `edited` (title/body) never cancels. It reuses only when the newest
+    earlier run of this PR and head, whatever its base or conclusion, is the green run
+    of the current base; a cancelled, red or other-base newest run reruns the cheap
+    check. pr.yml re-checks scope on every edit (Security-Review:, Refs #N).
     """
     changes = event.get("changes") or {}
     pr = event["pull_request"]
     if event.get("action") != "edited" or changes.get("base"):
-        return {"ok": True, "reuse": False, "scope": True, "reason": "new head, base or reopen"}
+        return {"ok": True, "reuse": False, "reason": "new head, base or reopen"}
     head, title = pr["head"]["sha"], pr_run_title(pr)
     runs = gh_api(f"actions/workflows/{PR_WORKFLOW}/runs?event=pull_request&head_sha={head}"
-                  "&status=completed&per_page=100")["workflow_runs"]
-    runs = [r for r in runs if r.get("head_sha") == head and r.get("display_title") == title
-            and r.get("path") == f".github/workflows/{PR_WORKFLOW}" and r.get("id", run_id) < run_id
-            and r.get("status") == "completed" and r.get("conclusion") not in ("cancelled", "skipped")]
+                  "&per_page=100")["workflow_runs"]
+    runs = [r for r in runs if r.get("head_sha") == head and r.get("id", run_id) < run_id
+            and r.get("path") == f".github/workflows/{PR_WORKFLOW}"
+            and (r.get("head_repository") or {}).get("full_name") == pr["head"]["repo"]["full_name"]
+            and str(r.get("display_title")).startswith(f"PR {pr['number']} into ")]
     last = max(runs, key=lambda item: item["id"], default={})
-    reuse = last.get("conclusion") == "success"
-    return {"ok": True, "reuse": reuse, "scope": "body" in changes, "run": last.get("html_url"),
-            "reason": "text-only edit; " + ("same head and base already green" if reuse
-                                            else "no green run of this head and base, rerun the cheap check")}
+    reuse = (last.get("display_title") == title and last.get("status") == "completed"
+             and last.get("conclusion") == "success")
+    return {"ok": True, "reuse": reuse, "run": last.get("html_url"),
+            "reason": "text-only edit; " + ("newest run of this head and base is green" if reuse
+                                            else "newest run of this head is not green for this base, rerun the cheap check")}
 
 
 def start(root, resume=False):
@@ -231,16 +234,16 @@ def doctor(root, shared=False, home=None):
 
 
 def pr_event_main():
-    """Writes reuse/scope to $GITHUB_OUTPUT; any doubt reruns the cheap check, never red."""
+    """Writes reuse to $GITHUB_OUTPUT; any doubt reruns the cheap check, never red."""
     try:
         event = json.loads(Path(os.environ["GITHUB_EVENT_PATH"]).read_text())
         result = pr_event(event, int(os.environ["GITHUB_RUN_ID"]))
     except (subprocess.CalledProcessError, subprocess.TimeoutExpired, OSError, ValueError, KeyError) as exc:
-        result = {"ok": True, "reuse": False, "scope": True,
+        result = {"ok": True, "reuse": False,
                   "reason": f"could not prove a green run of this head ({type(exc).__name__}); rerun the cheap check"}
     if os.environ.get("GITHUB_OUTPUT"):
         with open(os.environ["GITHUB_OUTPUT"], "a") as out:
-            out.write(f"reuse={str(result['reuse']).lower()}\nscope={str(result['scope']).lower()}\n")
+            out.write(f"reuse={str(result['reuse']).lower()}\n")
     print(json.dumps(result, ensure_ascii=False, indent=2))
     return 0
 

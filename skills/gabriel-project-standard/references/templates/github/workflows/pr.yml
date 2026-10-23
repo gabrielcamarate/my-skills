@@ -9,8 +9,8 @@ run-name: "PR ${{ github.event.pull_request.number }} into ${{ github.base_ref }
 # and runs the full suite only if they diverge (decision of 2026-10-22).
 on:
   # `edited` re-runs the gate when a PR base changes (e.g. staging -> main), so the fast
-  # check of a staging PR can never satisfy main. A title/body edit only re-checks what the
-  # text gates (scope) and reuses the head's green run (my-skills#16).
+  # check of a staging PR can never satisfy main. A title/body edit only re-checks scope
+  # and reuses the head's green run (my-skills#16).
   # No job-level `if`: skipped counts as green.
   pull_request:
     types: [opened, synchronize, reopened, edited]
@@ -75,9 +75,9 @@ jobs:
           STAGING_SHA: ${{ github.event.pull_request.head.sha }}
         run: python3 scripts/__PROJECT__-workflow.py staging-ready --expected-sha "$STAGING_SHA" --promotion
 
-      # Security-Review: and Refs #N live in the body: a body edit always re-checks scope.
+      # Security-Review: and Refs #N live in the body: every event, edits included, re-checks scope.
       - name: Verify task scope
-        if: github.base_ref == 'staging' && (steps.event.outputs.reuse != 'true' || steps.event.outputs.scope == 'true')
+        if: github.base_ref == 'staging'
         run: python3 scripts/check-pr-scope.py
 
       - name: Verify local workflow and domain skills

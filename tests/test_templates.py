@@ -352,14 +352,15 @@ class PrEditedEventTests(unittest.TestCase):
         context = self.context(name)
         pr = context["github"]["event"]["pull_request"]
         green = {"id": 1, "head_sha": pr["head"]["sha"], "status": "completed", "conclusion": "success",
-                 "display_title": self.workflow.pr_run_title(pr), "path": ".github/workflows/pr.yml"}
+                 "display_title": self.workflow.pr_run_title(pr), "path": ".github/workflows/pr.yml",
+                 "head_repository": pr["head"]["repo"]}
         original = self.workflow.gh_api
         self.workflow.gh_api = lambda path: {"workflow_runs": [green]}
         try:
             outputs = self.workflow.pr_event(context["github"]["event"], 2)
         finally:
             self.workflow.gh_api = original
-        context["steps"] = {"event": {"outputs": {k: str(outputs[k]).lower() for k in ("reuse", "scope")}}}
+        context["steps"] = {"event": {"outputs": {"reuse": str(outputs["reuse"]).lower()}}}
         ran = []
         for block in re.split(r"\n(?=      - name: )", self.pr.split("\n    steps:\n", 1)[1]):
             step = re.match(r"      - name: (.*)", block).group(1)
@@ -397,15 +398,19 @@ class PrEditedEventTests(unittest.TestCase):
     def test_description_edit_reuses_the_suite(self):
         ran = self.steps_run("edited-body")
         self.assertIn("Classify PR event", ran)
+        self.assertIn("Verify task scope", ran)
         for step in ("Install dependencies", "Scan committed secrets", "Run release gate",
                      "Verify local workflow and domain skills"):
             self.assertNotIn(step, ran)
 
     def test_security_review_edit_reevaluates_scope_only(self):
-        ran = self.steps_run("edited-security-review")
-        self.assertIn("Verify task scope", ran)
-        self.assertNotIn("Run release gate", ran)
-        self.assertNotIn("Install dependencies", ran)
+        # Also a title edit: a quick body edit before it may have been replaced while pending.
+        for name in ("edited-security-review", "edited-title"):
+            with self.subTest(event=name):
+                ran = self.steps_run(name)
+                self.assertIn("Verify task scope", ran)
+                self.assertNotIn("Run release gate", ran)
+                self.assertNotIn("Install dependencies", ran)
 
     def test_synchronize_runs_the_whole_cheap_check(self):
         ran = self.steps_run("synchronize")

@@ -21,13 +21,14 @@ def event(name):
     return json.loads((FIXTURES / f"{name}.json").read_text())
 
 
-def run(id_, conclusion="success", base="staging", head=HEAD, status="completed"):
-    return {"id": id_, "head_sha": head, "display_title": f"PR 31 into {base}", "status": status,
-            "conclusion": conclusion, "path": f".github/workflows/{workflow.PR_WORKFLOW}", "html_url": f"run/{id_}"}
+def run(id_, conclusion="success", base="staging", head=HEAD, status="completed", number=31, repo="acme/app"):
+    return {"id": id_, "head_sha": head, "display_title": f"PR {number} into {base}", "status": status,
+            "conclusion": conclusion, "path": f".github/workflows/{workflow.PR_WORKFLOW}", "html_url": f"run/{id_}",
+            "head_repository": {"full_name": repo}}
 
 
 class PrEventTest(unittest.TestCase):
-    """Text-only edits reuse the head's green run; a base change re-evaluates everything (#16)."""
+    """Text-only edits reuse the head's newest run only if green; a base change reruns everything (#16)."""
 
     def classify(self, name, runs=()):
         calls = []
@@ -48,28 +49,33 @@ class PrEventTest(unittest.TestCase):
         for name in ("opened", "synchronize", "edited-base"):
             with self.subTest(event=name):
                 result, calls = self.classify(name, [run(400)])
-                self.assertEqual((result["reuse"], result["scope"]), (False, True))
+                self.assertFalse(result["reuse"])
                 self.assertEqual(calls, [], "never reuse across a new head or base")
 
-    def test_description_edit_reuses_green_run_and_rechecks_scope(self):
-        result, _ = self.classify("edited-body", [run(400)])
-        self.assertEqual((result["reuse"], result["scope"]), (True, True))
-        self.assertEqual(result["run"], "run/400")
+    def test_text_edit_reuses_the_newest_green_run(self):
+        for name in ("edited-body", "edited-title", "edited-security-review"):
+            with self.subTest(event=name):
+                result, _ = self.classify(name, [run(300, "failure"), run(400)])
+                self.assertTrue(result["reuse"])
+                self.assertEqual(result["run"], "run/400")
 
-    def test_security_review_edit_rechecks_scope_without_the_suite(self):
-        result, _ = self.classify("edited-security-review", [run(400)])
-        self.assertEqual((result["reuse"], result["scope"]), (True, True))
-
-    def test_title_edit_reuses_without_scope(self):
-        result, _ = self.classify("edited-title", [run(400)])
-        self.assertEqual((result["reuse"], result["scope"]), (True, False))
+    def test_runs_of_other_prs_and_repos_are_ignored(self):
+        result, _ = self.classify("edited-body", [run(400), run(450, "failure", number=32),
+                                                  run(460, "failure", repo="fork/app")])
+        self.assertTrue(result["reuse"])
 
     def test_text_edit_without_green_proof_reruns_cheap_check(self):
         cases = {
             "no run": [],
             "latest red": [run(300), run(400, "failure")],
             "only cancelled": [run(400, "cancelled")],
+            # A pending body edit replaced by a later edit, or a cancelled newer run, never
+            # lets an older green verdict through.
+            "newest cancelled": [run(300), run(400, "cancelled")],
             "other base": [run(400, base="main")],
+            "newest on other base": [run(300), run(400, base="main")],
+            "other pr": [run(400, number=32)],
+            "fork repo": [run(400, repo="fork/app")],
             "other head": [run(400, head="a" * 40)],
             "own run": [run(RUN_ID)],
             "still running": [run(400, None, status="in_progress")],
@@ -78,10 +84,6 @@ class PrEventTest(unittest.TestCase):
             with self.subTest(case=case):
                 result, _ = self.classify("edited-body", runs)
                 self.assertFalse(result["reuse"], result)
-
-    def test_cancelled_run_does_not_hide_the_earlier_verdict(self):
-        result, _ = self.classify("edited-body", [run(300), run(400, "cancelled")])
-        self.assertTrue(result["reuse"])
 
     def test_api_failure_reruns_cheap_check_and_never_fails(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -94,7 +96,7 @@ class PrEventTest(unittest.TestCase):
             result = subprocess.run([sys.executable, str(SCRIPT), "pr-event"], env=env,
                                     capture_output=True, text=True, timeout=30)
             self.assertEqual(result.returncode, 0, result.stderr)
-            self.assertEqual(out.read_text(), "reuse=false\nscope=true\n")
+            self.assertEqual(out.read_text(), "reuse=false\n")
 
 
 if __name__ == "__main__":
