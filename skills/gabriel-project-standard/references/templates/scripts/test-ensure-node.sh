@@ -111,7 +111,8 @@ run_b "$P5" "$BIN_B:$WORK/old:$BASE_PATH" --check >/dev/null || fail 'project B 
 # The same version installed by N sessions at once, 20 rounds: every session
 # succeeds, the install works and nothing is left behind (#23). Also without
 # flock and with a BSD-like mv (macOS), and over a broken leftover install;
-# without flock over a broken leftover a session may only fail closed.
+# without flock over a broken leftover a session may only fail closed, and one
+# rerun leaves a working install.
 NOLOCK="$WORK/nolock"
 mkdir -p -- "$NOLOCK"
 for tool in /usr/bin/* /bin/*; do
@@ -135,6 +136,9 @@ concurrent() { # label path clean|broken [may-fail-closed]
       [[ ${4:-} == may-fail-closed && $(cat "$WORK/c$((i + 1)).log") == 'FAIL  unable to install '* ]] \
         || fail "$1 round $round, concurrent install $((i + 1)) of $CONCURRENT: $(cat "$WORK/c$((i + 1)).log")"
     done
+    if [[ ${4:-} == may-fail-closed ]]; then
+      run "$p" "$WORK/old:$2" >"$WORK/c0.log" 2>&1 || fail "$1 round $round, rerun: $(cat "$WORK/c0.log")"
+    fi
     [[ $("$p/lib/pinned-node/$NAME/bin/node" --version) == "v$PINNED" ]] || fail "$1 round $round left a broken Node"
     [[ -z $(ls -A "$p/lib/pinned-node" | grep -vxF -e "$NAME" -e ".$NAME.lock") ]] || fail "$1 round $round left $(ls -A "$p/lib/pinned-node")"
     [[ ! -e "$p/lib/pinned-node/$NAME/$NAME" ]] || fail "$1 round $round nested a copy inside the install"

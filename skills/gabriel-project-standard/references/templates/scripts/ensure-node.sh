@@ -51,7 +51,7 @@ if ! installed "$INSTALL_DIR"; then
   mkdir -p -- "$INSTALL_ROOT"
   # Sessions installing the same build take turns. Without flock (macOS) the
   # rename below never replaces a working install; sessions racing over a broken
-  # leftover may still fail, closed, and a rerun finds the install in place.
+  # leftover may still fail closed or lose the install, and a rerun installs it.
   if command -v flock >/dev/null 2>&1; then
     exec {install_lock}>>"$INSTALL_ROOT/.$NAME.lock"
     flock -w 600 "$install_lock" || fail "another session is still installing Node $NODE_VERSION"
