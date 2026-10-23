@@ -83,6 +83,18 @@ mv -- "$DIST.off" "$DIST"
 
 BIN=$(run_env '' bash "$PROJECT/scripts/ensure-node.sh" --bin)
 
+# Run on its own with the foreign node first on PATH: the pinned npm installs.
+rm -rf -- "$HOME_DIR/.local/lib/pinned-pnpm"
+: > "$WORK/npm.log"
+out=$(run_env '' bash "$PROJECT/scripts/ensure-pnpm.sh" 2>&1) || fail "standalone install: $out"
+grep -q "^npm node=v$PINNED " "$WORK/npm.log" || fail "standalone install must use the pinned npm: $(cat "$WORK/npm.log")"
+[[ $(snapshot) == "$BEFORE" ]] || fail '~/.local/bin was modified by the standalone install'
+
+# Without the pinned Node it fails closed before running any npm.
+: > "$WORK/npm.log"
+if out=$(run_env "$WORK/p0" bash "$PROJECT/scripts/ensure-pnpm.sh" 2>&1); then fail 'install without the pinned Node must fail'; fi
+[[ "$out" == *'found v22.22.0'* && ! -s "$WORK/npm.log" ]] || fail "unexpected output without the pinned Node: $out"
+
 # --check and --bin report without installing anything.
 P1="$WORK/p1"
 if out=$(run_env "$P1" bash "$PROJECT/scripts/ensure-pnpm.sh" --check 2>&1); then fail '--check must fail with another pnpm'; fi

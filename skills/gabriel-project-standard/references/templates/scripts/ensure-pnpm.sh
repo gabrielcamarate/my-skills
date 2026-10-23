@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 # Make the project's exact pnpm (packageManager pin) available under
 # $NODE_PREFIX/lib/pinned-pnpm/<version>/bin. Installs it with the npm of the
-# Node already first on PATH (the pinned one, see cloud-setup.sh), only when
-# neither PATH nor that directory has it. Never writes the shared
-# $NODE_PREFIX/bin: it may hold another project's node, which would then shadow
-# the pinned one. Callers put --bin first on their own PATH (see fast-check.sh).
+# pinned Node (ensure-node.sh), only when neither PATH nor that directory has
+# it. Never writes the shared $NODE_PREFIX/bin: it may hold another project's
+# node, which would then shadow the pinned one. Callers put --bin first on their
+# own PATH (see fast-check.sh).
 #   ./scripts/ensure-pnpm.sh          install if `pnpm` on PATH is another version
 #   ./scripts/ensure-pnpm.sh --bin    print the pinned bin dir (installs nothing)
 #   ./scripts/ensure-pnpm.sh --check  only verify the version on PATH
@@ -26,6 +26,12 @@ case "${1:-}" in
     exit 0 ;;
   *) printf 'usage: %s [--bin|--check]\n' "$0" >&2; exit 2 ;;
 esac
+
+# The pinned Node and its npm do the install, even when this runs on its own
+# with another project's node first on PATH.
+SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
+PATH="$("$SCRIPT_DIR/ensure-node.sh" --bin):$PATH"
+"$SCRIPT_DIR/ensure-node.sh" --check
 
 installed() { [[ "$("$1/bin/pnpm" --version 2>/dev/null || true)" == "$PNPM_VERSION" ]]; }
 [[ "$(pnpm --version 2>/dev/null || true)" == "$PNPM_VERSION" ]] && exit 0
