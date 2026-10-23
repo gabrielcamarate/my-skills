@@ -1,0 +1,72 @@
+{
+ "repository": "camaratetech/my-finances",
+ "stages": {
+  "heavy": {
+   "workflow": "Staging Heavy Quality",
+   "event": "push",
+   "branch": "staging"
+  },
+  "check": {
+   "workflow": "Pull Request Quality",
+   "event": "pull_request",
+   "branch": null
+  },
+  "main_ci": {
+   "workflow": "CI",
+   "event": "push",
+   "branch": "main"
+  },
+  "deploy": {
+   "workflow": "Deploy",
+   "event": null,
+   "branch": "main"
+  }
+ },
+ "responses": {
+  "pulls/209": {
+   "number": 209,
+   "created_at": "2026-10-22T22:36:16Z",
+   "merged_at": "2026-10-22T22:39:32Z",
+   "merge_commit_sha": "9eb6d375c81c9e7ad6ac0536e8122112a4d10f45",
+   "head": {
+    "sha": "517fab6d1a76942212d7731d616d14adf8372591",
+    "ref": "fix/208-promotion-no-rerun"
+   },
+   "base": {
+    "ref": "staging"
+   }
+  },
+  "actions/runs?branch=fix%2F208-promotion-no-rerun&event=pull_request&per_page=100": {
+   "workflow_runs": [
+    {
+     "id": 39866210355,
+     "name": "Pull Request Quality",
+     "path": ".github/workflows/pr.yml",
+     "event": "pull_request",
+     "head_branch": "fix/208-promotion-no-rerun",
+     "head_sha": "517fab6d1a76942212d7731d616d14adf8372591",
+     "status": "completed",
+     "conclusion": "success",
+     "created_at": "2026-10-22T22:36:43Z",
+     "run_started_at": "2026-10-22T22:36:43Z",
+     "updated_at": "2026-10-22T22:37:21Z",
+     "run_attempt": 1
+    },
+    {
+     "id": 39866164956,
+     "name": "Pull Request Quality",
+     "path": ".github/workflows/pr.yml",
+     "event": "pull_request",
+     "head_branch": "fix/208-promotion-no-rerun",
+     "head_sha": "517fab6d1a76942212d7731d616d14adf8372591",
+     "status": "completed",
+     "conclusion": "cancelled",
+     "created_at": "2026-10-22T22:36:19Z",
+     "run_started_at": "2026-10-22T22:36:19Z",
+     "updated_at": "2026-10-22T22:36:49Z",
+     "run_attempt": 1
+    }
+   ]
+  }
+ }
+}
