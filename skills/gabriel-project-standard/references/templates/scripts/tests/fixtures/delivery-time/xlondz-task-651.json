@@ -1,0 +1,72 @@
+{
+ "repository": "example/xlondz",
+ "stages": {
+  "heavy": {
+   "workflow": "CI",
+   "event": "push",
+   "branch": "staging"
+  },
+  "check": {
+   "workflow": "CI",
+   "event": "pull_request",
+   "branch": null
+  },
+  "main_ci": {
+   "workflow": "CI",
+   "event": "push",
+   "branch": "main"
+  },
+  "deploy": {
+   "workflow": "Deploy production",
+   "event": null,
+   "branch": "main"
+  }
+ },
+ "responses": {
+  "pulls/651": {
+   "number": 651,
+   "created_at": "2026-10-22T23:30:21Z",
+   "merged_at": "2026-10-23T01:04:36Z",
+   "merge_commit_sha": "0937620ffe22598b4f862e9091fadb936caf6f76",
+   "head": {
+    "sha": "1777c248acd66ee2b01ae5c6a37eaf36f5e0dc12",
+    "ref": "fix/651-task"
+   },
+   "base": {
+    "ref": "staging"
+   }
+  },
+  "actions/runs?branch=fix%2F651-task&event=pull_request&per_page=100&page=1": {
+   "workflow_runs": [
+    {
+     "id": 1001,
+     "name": "CI",
+     "path": ".github/workflows/ci.yml",
+     "event": "pull_request",
+     "head_branch": "fix/651-task",
+     "head_sha": "1777c248acd66ee2b01ae5c6a37eaf36f5e0dc12",
+     "status": "completed",
+     "conclusion": "success",
+     "created_at": "2026-10-22T23:31:53Z",
+     "run_started_at": "2026-10-22T23:31:53Z",
+     "updated_at": "2026-10-22T23:33:27Z",
+     "run_attempt": 1
+    },
+    {
+     "id": 1002,
+     "name": "CI",
+     "path": ".github/workflows/ci.yml",
+     "event": "pull_request",
+     "head_branch": "fix/651-task",
+     "head_sha": "1777c248acd66ee2b01ae5c6a37eaf36f5e0dc12",
+     "status": "completed",
+     "conclusion": "cancelled",
+     "created_at": "2026-10-22T23:30:25Z",
+     "run_started_at": "2026-10-22T23:30:25Z",
+     "updated_at": "2026-10-22T23:31:59Z",
+     "run_attempt": 1
+    }
+   ]
+  }
+ }
+}
