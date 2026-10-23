@@ -103,6 +103,24 @@ if out=$(run_env "$P1" bash "$PROJECT/scripts/ensure-pnpm.sh" --check 2>&1); the
   || fail 'unexpected --bin output'
 [[ ! -e "$P1" ]] || fail '--check and --bin must not install'
 
+# A pnpm that delegates to packageManager answers the pinned version unless
+# manage-package-manager-versions is off; its real version must decide (#26).
+DELEGATING="$WORK/delegating"
+stub "$DELEGATING/pnpm" "if [ \"\$1\" = --version ]; then
+  [ \"\${npm_config_manage_package_manager_versions:-}\" = false ] && echo 10.28.0 || echo $PNPM_PINNED; exit 0
+fi
+echo \"delegating pnpm \$*\" >> '$WORK/pnpm.log'; exit 1"
+P4="$WORK/p4"
+if out=$(run_env "$P4" env PATH="$DELEGATING:$SHARED:$BASE_PATH" bash "$PROJECT/scripts/ensure-pnpm.sh" --check 2>&1); then
+  fail '--check must see through a delegating pnpm'
+fi
+[[ "$out" == *'found 10.28.0'* ]] || fail "unexpected --check output with a delegating pnpm: $out"
+: > "$WORK/npm.log"
+out=$(run_env "$P4" env PATH="$BIN:$DELEGATING:$SHARED:$BASE_PATH" bash "$PROJECT/scripts/ensure-pnpm.sh" 2>&1) \
+  || fail "install past a delegating pnpm: $out"
+[[ $(npm_runs) == 1 ]] || fail "a delegating pnpm must not skip the install: $(cat "$WORK/npm.log")"
+[[ $("$P4/lib/pinned-pnpm/$PNPM_PINNED/bin/pnpm" --version) == "$PNPM_PINNED" ]] || fail 'pinned pnpm missing past a delegating pnpm'
+
 # Two sessions install the same version at once: one npm run, both succeed.
 P2="$WORK/p2"
 : > "$WORK/npm.log"
