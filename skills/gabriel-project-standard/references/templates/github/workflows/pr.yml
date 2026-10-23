@@ -71,6 +71,7 @@ jobs:
           python3 scripts/__PROJECT__-workflow.py doctor
           python3 -m unittest discover -s scripts/tests -p 'test_*.py' -v
           bash scripts/test-ensure-node.sh
+          bash scripts/test-cloud-setup.sh
           bash scripts/test-share-machine.sh
           node --test scripts/tests/release.test.mjs
           node scripts/release.mjs check

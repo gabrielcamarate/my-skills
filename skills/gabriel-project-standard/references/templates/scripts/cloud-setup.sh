@@ -4,9 +4,6 @@
 set -Eeuo pipefail
 
 ROOT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
-PNPM_VERSION=10.18.1
-NODE_PREFIX=${NODE_PREFIX:-$HOME/.local}
-fail() { printf 'FAIL  %s\n' "$1" >&2; exit 1; }
 
 # Exact Node from .nvmrc; installs the verified official build only when needed.
 # Only this process gets it first on PATH; fast-check.sh does the same.
@@ -14,12 +11,12 @@ fail() { printf 'FAIL  %s\n' "$1" >&2; exit 1; }
 PATH="$("$ROOT_DIR/scripts/ensure-node.sh" --bin):$PATH"
 export PATH
 
-if [[ "$(pnpm --version 2>/dev/null || true)" != "$PNPM_VERSION" ]]; then
-  PNPM_PREFIX=${PNPM_PREFIX:-$NODE_PREFIX}
-  npm install --global --prefix "$PNPM_PREFIX" "pnpm@$PNPM_VERSION" >/dev/null
-  export PATH="$PNPM_PREFIX/bin:$PATH"
-  [[ "$(pnpm --version)" == "$PNPM_VERSION" ]] || fail "pnpm $PNPM_VERSION not on PATH; add $PNPM_PREFIX/bin"
-fi
+# Exact pnpm in its own per-version directory, also first only on this PATH.
+# Never the shared ~/.local/bin, whose node would shadow the pinned one (#12).
+"$ROOT_DIR/scripts/ensure-pnpm.sh"
+PATH="$("$ROOT_DIR/scripts/ensure-pnpm.sh" --bin):$PATH"
+export PATH
+"$ROOT_DIR/scripts/ensure-pnpm.sh" --check
 
 # Cloud sessions commit as the repository owner, like local work.
 if [[ "${CLAUDE_CODE_REMOTE:-}" == true ]]; then

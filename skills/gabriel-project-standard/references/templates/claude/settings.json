@@ -9,6 +9,7 @@
     "allow": [
       "Bash(./scripts/cloud-setup.sh:*)",
       "Bash(./scripts/ensure-node.sh:*)",
+      "Bash(./scripts/ensure-pnpm.sh:*)",
       "Bash(./scripts/fast-check.sh:*)",
       "Bash(gh issue close:*)",
       "Bash(gh issue comment:*)",
