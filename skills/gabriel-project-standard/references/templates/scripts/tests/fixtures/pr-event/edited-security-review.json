@@ -1,0 +1,27 @@
+{
+  "action": "edited",
+  "changes": {
+    "body": {
+      "from": "Refs #16\n\nCorrige o gatilho."
+    }
+  },
+  "pull_request": {
+    "number": 31,
+    "title": "fix: edited cancel",
+    "body": "Refs #16\n\nCorrige o gatilho.\nSecurity-Review: s\u00f3 pr.yml",
+    "head": {
+      "ref": "fix/16-edited-cancel",
+      "sha": "cccccccccccccccccccccccccccccccccccccccc",
+      "repo": {
+        "full_name": "acme/app"
+      }
+    },
+    "base": {
+      "ref": "staging",
+      "sha": "dddddddddddddddddddddddddddddddddddddddd",
+      "repo": {
+        "full_name": "acme/app"
+      }
+    }
+  }
+}

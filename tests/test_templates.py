@@ -1,3 +1,4 @@
+import importlib.util
 import json
 import re
 import shutil
@@ -264,6 +265,161 @@ class PromotionTemplateTests(unittest.TestCase):
 
     def test_promotion_source_is_own_staging(self):
         self.assertIn('[[ $HEAD_REF == staging && $HEAD_REPO == "$GITHUB_REPOSITORY" ]]', self.pr)
+
+
+def gh_expr(text, context):
+    """Tiny GitHub Actions expression evaluator: paths, literals, !, ==, !=, &&, ||, ()."""
+    tokens = re.findall(r"'(?:[^']|'')*'|&&|\|\||==|!=|!|\(|\)|[A-Za-z_][\w.-]*", text)
+    assert "".join(tokens) == re.sub(r"\s+", "", text), text
+    pos = 0
+
+    def take():
+        nonlocal pos
+        pos += 1
+        return tokens[pos - 1]
+
+    def peek():
+        return tokens[pos] if pos < len(tokens) else None
+
+    def atom():
+        token = take()
+        if token == "!":
+            return not atom()
+        if token == "(":
+            value = either()
+            assert take() == ")"
+            return value
+        if token.startswith("'"):
+            return token[1:-1].replace("''", "'")
+        if token in ("true", "false", "null"):
+            return {"true": True, "false": False, "null": None}[token]
+        value = context
+        for key in token.split("."):
+            value = value.get(key) if isinstance(value, dict) else None
+        return value
+
+    def compare():
+        left = atom()
+        while peek() in ("==", "!="):
+            op, right = take(), atom()
+            same = (left.lower() == right.lower() if isinstance(left, str) and isinstance(right, str)
+                    else left == right)
+            left = same if op == "==" else not same
+        return left
+
+    def both():
+        left = compare()
+        while peek() == "&&":
+            take()
+            right = compare()
+            left = left and right
+        return left
+
+    def either():
+        left = both()
+        while peek() == "||":
+            take()
+            right = both()
+            left = left or right
+        return left
+
+    value = either()
+    assert peek() is None, text
+    return value
+
+
+class PrEditedEventTests(unittest.TestCase):
+    """my-skills#16: only a base change cancels; a text edit reuses the head's green run."""
+
+    pr = (TEMPLATES / "github/workflows/pr.yml").read_text()
+    fixtures = SCRIPTS / "tests/fixtures/pr-event"
+    spec = importlib.util.spec_from_file_location("project_workflow", SCRIPTS / "__PROJECT__-workflow.py")
+    workflow = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(workflow)
+
+    def context(self, name):
+        event = json.loads((self.fixtures / f"{name}.json").read_text())
+        return {"github": {"event_name": "pull_request", "event": event, "ref": "refs/pull/31/merge",
+                           "base_ref": event["pull_request"]["base"]["ref"]}}
+
+    def value(self, key, context):
+        raw = re.search(rf"^concurrency:\n(?:  .*\n)*?  {key}: (.*)$", self.pr, re.M).group(1)
+        return re.sub(r"\$\{\{(.*?)\}\}", lambda m: str(gh_expr(m.group(1), context)), raw) \
+            if key == "group" else gh_expr(re.fullmatch(r"\$\{\{(.*)\}\}", raw).group(1), context)
+
+    def steps_run(self, name):
+        """Steps of the required job that run, with a green earlier run of the same head and base."""
+        context = self.context(name)
+        pr = context["github"]["event"]["pull_request"]
+        green = {"id": 1, "head_sha": pr["head"]["sha"], "status": "completed", "conclusion": "success",
+                 "display_title": self.workflow.pr_run_title(pr), "path": ".github/workflows/pr.yml",
+                 "head_repository": pr["head"]["repo"]}
+        original = self.workflow.gh_api
+        self.workflow.gh_api = lambda path: {"workflow_runs": [green]}
+        try:
+            outputs = self.workflow.pr_event(context["github"]["event"], 2)
+        finally:
+            self.workflow.gh_api = original
+        context["steps"] = {"event": {"outputs": {"reuse": str(outputs["reuse"]).lower()}}}
+        ran = []
+        for block in re.split(r"\n(?=      - name: )", self.pr.split("\n    steps:\n", 1)[1]):
+            step = re.match(r"      - name: (.*)", block).group(1)
+            cond = re.search(r"^        if: (.*)$", block, re.M)
+            if cond is None or gh_expr(cond.group(1), context):
+                ran.append(step)
+        return ran
+
+    def test_run_name_matches_pr_event_lookup(self):
+        self.assertIn('run-name: "PR ${{ github.event.pull_request.number }} into ${{ github.base_ref }}"', self.pr)
+        pr = self.context("opened")["github"]["event"]["pull_request"]
+        self.assertEqual(self.workflow.pr_run_title(pr), "PR 31 into staging")
+
+    def test_all_events_share_the_pr_group(self):
+        groups = {self.value("group", self.context(name)) for name in
+                  ("opened", "synchronize", "edited-body", "edited-title", "edited-base", "edited-security-review")}
+        self.assertEqual(groups, {"pr-quality-31"})
+
+    def test_description_edit_does_not_cancel(self):
+        for name in ("edited-body", "edited-title", "edited-security-review"):
+            with self.subTest(event=name):
+                self.assertIs(self.value("cancel-in-progress", self.context(name)), False)
+
+    def test_new_head_and_base_change_cancel(self):
+        for name in ("opened", "synchronize", "edited-base"):
+            with self.subTest(event=name):
+                self.assertIs(self.value("cancel-in-progress", self.context(name)), True)
+
+    def test_base_change_reevaluates_the_promotion_gate(self):
+        ran = self.steps_run("edited-base")
+        for step in ("Require green staging tip for promotion", "Dependency audit (strict)",
+                     "Install dependencies", "Scan committed secrets"):
+            self.assertIn(step, ran)
+
+    def test_description_edit_reuses_the_suite(self):
+        ran = self.steps_run("edited-body")
+        self.assertIn("Classify PR event", ran)
+        self.assertIn("Verify task scope", ran)
+        for step in ("Install dependencies", "Scan committed secrets", "Run release gate",
+                     "Verify local workflow and domain skills"):
+            self.assertNotIn(step, ran)
+
+    def test_security_review_edit_reevaluates_scope_only(self):
+        # Also a title edit: a quick body edit before it may have been replaced while pending.
+        for name in ("edited-security-review", "edited-title"):
+            with self.subTest(event=name):
+                ran = self.steps_run(name)
+                self.assertIn("Verify task scope", ran)
+                self.assertNotIn("Run release gate", ran)
+                self.assertNotIn("Install dependencies", ran)
+
+    def test_synchronize_runs_the_whole_cheap_check(self):
+        ran = self.steps_run("synchronize")
+        for step in ("Verify task scope", "Install dependencies", "Run release gate"):
+            self.assertIn(step, ran)
+
+    def test_required_job_has_no_if(self):
+        job = self.pr.split("\n  release-quality:\n", 1)[1].split("\n    steps:\n", 1)[0]
+        self.assertNotRegex(job, r"(?m)^    if:")
 
 
 if __name__ == "__main__":
