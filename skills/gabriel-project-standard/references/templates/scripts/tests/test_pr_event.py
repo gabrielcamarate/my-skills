@@ -21,10 +21,12 @@ def event(name):
     return json.loads((FIXTURES / f"{name}.json").read_text())
 
 
-def run(id_, conclusion="success", base="staging", head=HEAD, status="completed", number=31, repo="acme/app"):
+def run(id_, conclusion="success", base="staging", head=HEAD, status="completed", number=31, repo="acme/app",
+        started=None):
     return {"id": id_, "head_sha": head, "display_title": f"PR {number} into {base}", "status": status,
             "conclusion": conclusion, "path": f".github/workflows/{workflow.PR_WORKFLOW}", "html_url": f"run/{id_}",
-            "head_repository": {"full_name": repo}}
+            "head_repository": {"full_name": repo},
+            "run_started_at": started or f"2026-10-23T{id_ // 60 % 24:02d}:{id_ % 60:02d}:00Z"}
 
 
 class PrEventTest(unittest.TestCase):
@@ -79,6 +81,11 @@ class PrEventTest(unittest.TestCase):
             "other head": [run(400, head="a" * 40)],
             "own run": [run(RUN_ID)],
             "still running": [run(400, None, status="in_progress")],
+            # A re-run keeps its id but restarts: its latest attempt is the newest verdict (#27).
+            "older run re-run red": [run(300, "failure", started="2026-10-23T23:00:00Z"), run(400)],
+            "older run re-running": [run(300, None, status="in_progress", started="2026-10-23T23:00:00Z"),
+                                     run(400)],
+            "unknown start": [{**run(400), "run_started_at": None}],
         }
         for case, runs in cases.items():
             with self.subTest(case=case):

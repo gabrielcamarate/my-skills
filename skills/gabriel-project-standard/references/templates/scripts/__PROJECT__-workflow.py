@@ -185,8 +185,10 @@ def pr_event(event, run_id):
     Only a base change re-evaluates the whole gate; pr.yml cancels the old run for it.
     A text-only `edited` (title/body) never cancels. It reuses only when the newest
     earlier run of this PR and head, whatever its base or conclusion, is the green run
-    of the current base; a cancelled, red or other-base newest run reruns the cheap
-    check. pr.yml re-checks scope on every edit (Security-Review:, Refs #N).
+    of the current base; a cancelled, red, running or other-base newest run reruns the
+    cheap check. Newest is the latest attempt to start, so a re-run of an older run that
+    turns red (or is still running) is never hidden by a later green (#27). pr.yml
+    re-checks scope on every edit (Security-Review:, Refs #N).
     """
     changes = event.get("changes") or {}
     pr = event["pull_request"]
@@ -200,7 +202,10 @@ def pr_event(event, run_id):
             and r.get("path") == f".github/workflows/{PR_WORKFLOW}"
             and repo and (r.get("head_repository") or {}).get("full_name") == repo
             and str(r.get("display_title")).startswith(f"PR {pr['number']} into ")]
-    last = max(runs, key=lambda item: item["id"], default={})
+    # A re-run keeps its id but restarts: the newest verdict is the latest attempt to start.
+    if any(not r.get("run_started_at") for r in runs):
+        return {"ok": True, "reuse": False, "reason": "run start unknown, rerun the cheap check"}
+    last = max(runs, key=lambda item: (item["run_started_at"], item["id"]), default={})
     reuse = (last.get("display_title") == title and last.get("status") == "completed"
              and last.get("conclusion") == "success")
     return {"ok": True, "reuse": reuse, "run": last.get("html_url"),
@@ -301,7 +306,8 @@ def pr_event_main():
     try:
         event = json.loads(Path(os.environ["GITHUB_EVENT_PATH"]).read_text())
         result = pr_event(event, int(os.environ["GITHUB_RUN_ID"]))
-    except (subprocess.CalledProcessError, subprocess.TimeoutExpired, OSError, ValueError, KeyError) as exc:
+    except (subprocess.CalledProcessError, subprocess.TimeoutExpired, OSError, ValueError, KeyError,
+            TypeError, AttributeError) as exc:
         result = {"ok": True, "reuse": False,
                   "reason": f"could not prove a green run of this head ({type(exc).__name__}); rerun the cheap check"}
     if os.environ.get("GITHUB_OUTPUT"):
@@ -337,7 +343,8 @@ def main():
                   main_ready(args.sha) if args.command == "main-ready" else
                   doctor(root, args.shared_skills) if args.command == "doctor" else
                   start(root, args.resume) if args.command == "start" else status(root))
-    except (subprocess.CalledProcessError, subprocess.TimeoutExpired, OSError, ValueError, KeyError) as exc:
+    except (subprocess.CalledProcessError, subprocess.TimeoutExpired, OSError, ValueError, KeyError,
+            TypeError, AttributeError) as exc:
         # Do not print Git stderr: credential helpers/URLs may include secrets.
         print(json.dumps({"ok": False, "error": "Git/GitHub verification failed; stop the line",
                           "freshness": "unverified", "exit_code": getattr(exc, "returncode", 1)}))
