@@ -1,0 +1,42 @@
+# Guardrails do Codex, iguais às listas "nunca" e "pergunta" do Claude
+# (.claude/settings.json de Xlondz, Maison e Rakmma). Decisão de 15/10/2026.
+# Origem versionada: my-skills, skills/gabriel-project-standard/references/global/codex/.
+# Instalado em ~/.codex/rules/gabriel-guardrails.rules. Teste: tests/test_agent_permissions.py.
+# Com approval_policy = "never", "prompt" vira bloqueio: o agente para e reporta.
+# A proteção de branch no GitHub continua sendo a trava real de main/staging.
+
+# Nunca: destrutivo ou irreversível
+prefix_rule(pattern=["git", "push", ["--force", "-f", "--force-with-lease", "--delete", "-d"]], decision="forbidden", justification="force push e remoção de branch remota são proibidos")
+prefix_rule(pattern=["git", "push", "origin", ["--force", "-f", "--force-with-lease", "--delete", "-d", "main", "staging"]], decision="forbidden", justification="push direto em main/staging ou forçado é proibido; use PR")
+prefix_rule(pattern=["git", "reset", "--hard"], decision="forbidden", justification="descarta trabalho")
+prefix_rule(pattern=["git", "clean"], decision="forbidden", justification="apaga arquivos não versionados")
+prefix_rule(pattern=["rm", ["-rf", "-fr", "-Rf"]], decision="forbidden", justification="remoção recursiva forçada é proibida")
+prefix_rule(pattern=["sudo"], decision="forbidden", justification="sem privilégio de root")
+prefix_rule(pattern=["stripe"], decision="forbidden", justification="Stripe CLI fica com Gabriel")
+prefix_rule(pattern=["supabase", "db", "reset"], decision="forbidden", justification="apaga o banco")
+prefix_rule(pattern=["docker", "system", "prune"], decision="forbidden", justification="apaga recursos de outros projetos")
+prefix_rule(pattern=["docker", "volume", ["rm", "prune"]], decision="forbidden", justification="apaga dados")
+prefix_rule(pattern=["docker", ["container", "network", "image", "builder", "buildx"], "prune"], decision="forbidden", justification="prune apaga recursos de outras tarefas")
+prefix_rule(pattern=["docker", "rm", ["-f", "--force"]], decision="forbidden", justification="pare o container e remova por ID, sem --force")
+prefix_rule(pattern=["docker", "network", "rm", ["-f", "--force"]], decision="forbidden", justification="remova por ID, sem --force")
+prefix_rule(pattern=["xargs", "docker"], decision="forbidden", justification="remoção por lista ampla; use o ID exato")
+prefix_rule(pattern=["xargs", "-r", "docker"], decision="forbidden", justification="remoção por lista ampla; use o ID exato")
+prefix_rule(pattern=["git", "worktree", "remove", ["-f", "--force"]], decision="forbidden", justification="worktree só sai limpa; se recusar, pare e reporte")
+
+# Pode: apagar o que a própria tarefa criou, por ID ou nome exato (my-skills#33).
+# Flag depois do ID e $(...) não casam com prefixo: a instrução proíbe, o settings do Claude nega.
+prefix_rule(pattern=["docker", ["stop", "rm"]], decision="allow", justification="recurso da própria tarefa, por ID exato")
+prefix_rule(pattern=["docker", "network", "rm"], decision="allow", justification="rede da própria tarefa, por nome exato")
+prefix_rule(pattern=["git", "worktree", "remove"], decision="allow", justification="worktree da própria tarefa")
+prefix_rule(pattern=["git", "branch", "-D"], decision="allow", justification="branch local da própria tarefa")
+
+# Pergunta antes: produção, dados e acesso remoto
+prefix_rule(pattern=[["ssh", "scp", "rsync"]], decision="prompt", justification="acesso a servidor remoto/produção")
+prefix_rule(pattern=["wrangler", ["deploy", "versions", "secret", "d1", "r2"]], decision="prompt", justification="altera Cloudflare fora do CI")
+prefix_rule(pattern=["npx", "wrangler", ["deploy", "versions", "secret", "d1", "r2"]], decision="prompt", justification="altera Cloudflare fora do CI")
+prefix_rule(pattern=["supabase", "db", ["push", "dump"]], decision="prompt", justification="banco remoto")
+prefix_rule(pattern=["supabase", ["link", "migration"]], decision="prompt", justification="banco remoto")
+prefix_rule(pattern=["vercel"], decision="prompt", justification="deploy fora do fluxo")
+prefix_rule(pattern=["pnpm", ["cloudflare:deploy:production", "health:readiness:production", "staging:data:refresh", "r2:faixa:upload"]], decision="prompt", justification="produção ou dados")
+prefix_rule(pattern=["pnpm", ["backup:all:run", "backup:database:run", "backup:drive:run", "backup:storage:run", "backup:prod:drive", "backup:restore:drill"]], decision="prompt", justification="backup/restore")
+prefix_rule(pattern=["./scripts/xlondz", ["backup", "operation", "database-delivery"]], decision="prompt", justification="operação de produção do Xlondz")

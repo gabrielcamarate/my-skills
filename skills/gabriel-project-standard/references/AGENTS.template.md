@@ -11,7 +11,7 @@
 5. PR para `staging`: título em inglês Conventional, corpo em pt-BR terminando com `Refs #N` (nunca `Closes`). Mudança sensível (<listar: auth, pagamento, segredos, CI/gates, migrations, permissões e instruções de agente>) passa por revisão independente antes do merge.
 6. Check barato verde: `gh pr merge N --squash`. Confira de novo a pesada da `staging` antes do merge.
 7. Promoção `staging → main` só com OK de Gabriel no chat: PR de release corta a versão, gate verde, `gh pr merge N --merge --match-head-commit <head avaliado>`.
-8. Limpeza: `git -C <repo> worktree remove <pasta>` (sem `--force`); se recusar, pare e reporte.
+8. Limpeza, sem perguntar: ao terminar ou no checkpoint, apague por ID ou nome exato o que a tarefa criou (containers, redes, fixtures, caches, `git -C <repo> worktree remove <pasta>`, `git branch -D <branch>`), nunca o alheio, `prune`, filtro amplo ou `--force`; evidência vai para a issue e fica só o que a próxima sessão da mesma issue usa, dito na issue. Se recusar, pare e reporte.
 
 Mesma falha 3 vezes ou correção da correção: pare e chame Gabriel.
 
