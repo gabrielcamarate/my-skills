@@ -1,0 +1,22 @@
+{
+  "action": "opened",
+  "pull_request": {
+    "number": 31,
+    "title": "fix: edited cancel",
+    "body": "Refs #16\n\nCorrige o gatilho.",
+    "head": {
+      "ref": "fix/16-edited-cancel",
+      "sha": "cccccccccccccccccccccccccccccccccccccccc",
+      "repo": {
+        "full_name": "acme/app"
+      }
+    },
+    "base": {
+      "ref": "staging",
+      "sha": "dddddddddddddddddddddddddddddddddddddddd",
+      "repo": {
+        "full_name": "acme/app"
+      }
+    }
+  }
+}

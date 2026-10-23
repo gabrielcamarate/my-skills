@@ -3,6 +3,7 @@
 
 import argparse
 import json
+import os
 from pathlib import Path
 import re
 import subprocess
@@ -50,6 +51,7 @@ def status(root):
 
 REPOSITORY = "__OWNER__/__REPO__"
 HEAVY_WORKFLOW = "staging-quality.yml"
+PR_WORKFLOW = "pr.yml"
 
 
 def gh_api(path):
@@ -108,6 +110,36 @@ def staging_ready(expected_sha=None, promotion=False):
         errors.append("staging tip changed during verification")
     return {"ok": not errors, "sha": tip, "promotion": promotion, "run": run.get("html_url"),
             "run_status": run.get("status"), "errors": errors, "warnings": warnings}
+
+
+def pr_run_title(pr):
+    """Same text as `run-name` in pr.yml: identifies the head's runs per PR and base."""
+    return f"PR {pr['number']} into {pr['base']['ref']}"
+
+
+def pr_event(event, run_id):
+    """Decide what a pull_request run must redo (my-skills#16).
+
+    Only a base change re-evaluates the whole gate; pr.yml cancels the old run for it.
+    A text-only `edited` (title/body) never cancels and reuses the latest finished run
+    of the same head and base when it is green; without that proof it runs the cheap
+    check again. A body edit re-checks the scope (Security-Review:, Refs #N).
+    """
+    changes = event.get("changes") or {}
+    pr = event["pull_request"]
+    if event.get("action") != "edited" or changes.get("base"):
+        return {"ok": True, "reuse": False, "scope": True, "reason": "new head, base or reopen"}
+    head, title = pr["head"]["sha"], pr_run_title(pr)
+    runs = gh_api(f"actions/workflows/{PR_WORKFLOW}/runs?event=pull_request&head_sha={head}"
+                  "&status=completed&per_page=100")["workflow_runs"]
+    runs = [r for r in runs if r.get("head_sha") == head and r.get("display_title") == title
+            and r.get("path") == f".github/workflows/{PR_WORKFLOW}" and r.get("id", run_id) < run_id
+            and r.get("status") == "completed" and r.get("conclusion") not in ("cancelled", "skipped")]
+    last = max(runs, key=lambda item: item["id"], default={})
+    reuse = last.get("conclusion") == "success"
+    return {"ok": True, "reuse": reuse, "scope": "body" in changes, "run": last.get("html_url"),
+            "reason": "text-only edit; " + ("same head and base already green" if reuse
+                                            else "no green run of this head and base, rerun the cheap check")}
 
 
 def start(root, resume=False):
@@ -198,9 +230,24 @@ def doctor(root, shared=False, home=None):
             "memory_capture_configured": (root / ".ai-memory.toml").exists()}
 
 
+def pr_event_main():
+    """Writes reuse/scope to $GITHUB_OUTPUT; any doubt reruns the cheap check, never red."""
+    try:
+        event = json.loads(Path(os.environ["GITHUB_EVENT_PATH"]).read_text())
+        result = pr_event(event, int(os.environ["GITHUB_RUN_ID"]))
+    except (subprocess.CalledProcessError, subprocess.TimeoutExpired, OSError, ValueError, KeyError) as exc:
+        result = {"ok": True, "reuse": False, "scope": True,
+                  "reason": f"could not prove a green run of this head ({type(exc).__name__}); rerun the cheap check"}
+    if os.environ.get("GITHUB_OUTPUT"):
+        with open(os.environ["GITHUB_OUTPUT"], "a") as out:
+            out.write(f"reuse={str(result['reuse']).lower()}\nscope={str(result['scope']).lower()}\n")
+    print(json.dumps(result, ensure_ascii=False, indent=2))
+    return 0
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("command", choices=("start", "status", "doctor", "staging-ready"))
+    parser.add_argument("command", choices=("start", "status", "doctor", "staging-ready", "pr-event"))
     parser.add_argument("--expected-sha")
     parser.add_argument("--promotion", action="store_true",
                         help="staging-ready for the PR into main: heavy suite and audit must be green")
@@ -214,6 +261,8 @@ def main():
     if args.promotion and args.command != "staging-ready":
         parser.error("--promotion is only valid for staging-ready")
     root = Path(__file__).resolve().parent.parent
+    if args.command == "pr-event":
+        return pr_event_main()
     try:
         result = (staging_ready(args.expected_sha, args.promotion) if args.command == "staging-ready" else
                   doctor(root, args.shared_skills) if args.command == "doctor" else

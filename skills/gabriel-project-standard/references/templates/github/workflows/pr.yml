@@ -1,4 +1,6 @@
 name: Pull Request Quality
+# pr-event finds the head's earlier runs for this PR and base by this title.
+run-name: "PR ${{ github.event.pull_request.number }} into ${{ github.base_ref }}"
 
 # Akita: cheap PR into staging; heavy staging runs after merge (staging-quality.yml).
 # PR into main (promotion) never reruns the suite: it requires the heavy run completed
@@ -7,7 +9,9 @@ name: Pull Request Quality
 # and runs the full suite only if they diverge (decision of 2026-10-22).
 on:
   # `edited` re-runs the gate when a PR base changes (e.g. staging -> main), so the fast
-  # check of a staging PR can never satisfy main. No job-level `if`: skipped counts as green.
+  # check of a staging PR can never satisfy main. A title/body edit only re-checks what the
+  # text gates (scope) and reuses the head's green run (my-skills#16).
+  # No job-level `if`: skipped counts as green.
   pull_request:
     types: [opened, synchronize, reopened, edited]
     branches:
@@ -21,8 +25,9 @@ permissions:
 
 concurrency:
   group: pr-quality-${{ github.event.pull_request.number || github.ref }}
-  # Superseded PR candidates can be cancelled.
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+  # A new head, base or reopen supersedes the running candidate. A text-only edit waits
+  # in the group instead: it never cancels the suite of the same head.
+  cancel-in-progress: ${{ !(github.event.action == 'edited' && !github.event.changes.base) }}
 
 jobs:
   release-quality:
@@ -40,6 +45,14 @@ jobs:
           persist-credentials: false
           fetch-depth: 0
 
+      # Text-only edit: reuse=true when the same head and base already passed. Any doubt
+      # reruns the cheap check; the job still reports and is never skipped.
+      - name: Classify PR event
+        id: event
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 scripts/__PROJECT__-workflow.py pr-event
+
       - name: Enforce promotion source
         env:
           EVENT: ${{ github.event_name }}
@@ -56,17 +69,19 @@ jobs:
       # Promotion evidence: heavy suite completed and green on the exact SHA, no red or
       # audit-outage issue open. Replaces rerunning the full suite here.
       - name: Require green staging tip for promotion
-        if: github.base_ref == 'main'
+        if: github.base_ref == 'main' && steps.event.outputs.reuse != 'true'
         env:
           GH_TOKEN: ${{ github.token }}
           STAGING_SHA: ${{ github.event.pull_request.head.sha }}
         run: python3 scripts/__PROJECT__-workflow.py staging-ready --expected-sha "$STAGING_SHA" --promotion
 
+      # Security-Review: and Refs #N live in the body: a body edit always re-checks scope.
       - name: Verify task scope
-        if: github.base_ref == 'staging'
+        if: github.base_ref == 'staging' && (steps.event.outputs.reuse != 'true' || steps.event.outputs.scope == 'true')
         run: python3 scripts/check-pr-scope.py
 
       - name: Verify local workflow and domain skills
+        if: steps.event.outputs.reuse != 'true'
         run: |
           python3 scripts/__PROJECT__-workflow.py doctor
           python3 -m unittest discover -s scripts/tests -p 'test_*.py' -v
@@ -77,28 +92,32 @@ jobs:
           node scripts/release.mjs check
 
       - name: Set up pnpm
+        if: steps.event.outputs.reuse != 'true'
         uses: pnpm/action-setup@v4
 
       - name: Set up Node.js
+        if: steps.event.outputs.reuse != 'true'
         uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
           cache: pnpm
 
       - name: Install dependencies
+        if: steps.event.outputs.reuse != 'true'
         run: pnpm install --frozen-lockfile
 
       - name: Scan committed secrets
+        if: steps.event.outputs.reuse != 'true'
         run: pnpm security:secrets
 
       # Promotion to main: an audit source outage blocks here until audit passes.
       - name: Dependency audit (strict)
-        if: github.base_ref == 'main'
+        if: github.base_ref == 'main' && steps.event.outputs.reuse != 'true'
         run: python3 scripts/dependency-audit.py
 
       # Cheap verifiers for task PRs only; the heavy suite runs after the staging merge.
       - name: Run release gate
-        if: github.base_ref == 'staging'
+        if: github.base_ref == 'staging' && steps.event.outputs.reuse != 'true'
         run: |
           pnpm typecheck
           pnpm lint
