@@ -127,6 +127,27 @@ class CheckPrScopeTest(unittest.TestCase):
                 ok = self.scope(files, body="Refs #12\n\nSecurity-Review: no new token, gate or permission\n")
                 self.assertEqual(ok.returncode, 0, ok.stderr)
 
+    def test_agent_and_executable_paths_require_a_security_review_line(self):
+        # my-skills#17: bin/ runs code; .claude/, .codex/ and root AGENTS.md/CLAUDE.md steer agents.
+        # A bare "bin" is how git lists a symlink or submodule at that name.
+        for path in ("bin/ci", ".claude/settings.json", ".codex/scripts/setup.sh", "AGENTS.md", "CLAUDE.md",
+                     "bin", ".claude", ".codex"):
+            with self.subTest(path=path):
+                self.setUp()
+                files = {path: "x\n", "changes/12-a.md": "- A.\n"}
+                self.assertRefused(self.scope(files), "Security-Review:")
+                self.setUp()
+                ok = self.scope(files, body="Refs #12\nSecurity-Review: only narrows agent permissions\n")
+                self.assertEqual(ok.returncode, 0, ok.stderr)
+
+    def test_lockfile_and_nested_agent_docs_need_no_security_review_line(self):
+        # The strict audit covers pnpm-lock.yaml; only the root AGENTS.md/CLAUDE.md count.
+        for path in ("pnpm-lock.yaml", "docs/AGENTS.md", "packages/a/CLAUDE.md", "binaries/x", "lib/bin/x"):
+            with self.subTest(path=path):
+                self.setUp()
+                result = self.scope({path: "x\n", "changes/12-a.md": "- A.\n"})
+                self.assertEqual(result.returncode, 0, result.stderr)
+
     def test_release_bump_also_needs_the_security_review_line(self):
         bump = {"package.json": '{"version": "0.1.5"}\n', "CHANGELOG.md": "# Changelog\n\n## 0.1.5 - 2026-10-22\n"}
         self.assertRefused(self.scope(bump, branch="chore/20-release"), "Security-Review:")
