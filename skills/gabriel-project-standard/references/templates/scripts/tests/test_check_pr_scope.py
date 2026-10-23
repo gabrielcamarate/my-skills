@@ -144,7 +144,8 @@ class CheckPrScopeTest(unittest.TestCase):
         # my-skills#25: wrangler build.command, .npmrc node-options, pnpm settings and patches/ run
         # during install or deploy, next to the deploy token. Wrangler/npm config counts in any package.
         for path in ("wrangler.jsonc", "wrangler.json", "wrangler.toml", "apps/web/wrangler.jsonc", ".npmrc",
-                     "packages/a/.npmrc", "pnpm-workspace.yaml", "patches/left-pad@1.3.0.patch", "patches"):
+                     "packages/a/.npmrc", "pnpm-workspace.yaml", "patches/left-pad@1.3.0.patch", "patches",
+                     ".pnpmfile.cjs", ".wrangler/deploy/config.json", "apps/web/.wrangler/deploy/config.json"):
             with self.subTest(path=path):
                 self.setUp()
                 files = {path: "x\n", "changes/12-a.md": "- A.\n"}

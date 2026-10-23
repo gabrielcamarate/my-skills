@@ -18,10 +18,11 @@ LEGACY_NOTE = 'changes/0-unreleased-legacy.md'
 SECURITY_REVIEW = re.compile(r'^Security-Review:[ \t]*\S', re.M)
 # Paths that run code in CI or steer agents (my-skills#17); pnpm-lock.yaml is the strict audit's job.
 REVIEWED_DIRS = ('.github/', 'scripts/', 'bin/', '.claude/', '.codex/', 'patches/')
-REVIEWED_FILES = ('package.json', 'AGENTS.md', 'CLAUDE.md', 'pnpm-workspace.yaml')
+REVIEWED_FILES = ('package.json', 'AGENTS.md', 'CLAUDE.md', 'pnpm-workspace.yaml', '.pnpmfile.cjs')
 # Run during install or deploy, next to the deploy token, in any package (my-skills#25):
-# wrangler build.command, .npmrc node-options.
+# wrangler build.command, .npmrc node-options, .wrangler/deploy/config.json redirecting the config.
 REVIEWED_NAMES = ('wrangler.jsonc', 'wrangler.json', 'wrangler.toml', '.npmrc')
+REVIEWED_PARTS = ('.wrangler',)
 UNRELEASED = re.compile(r'^## Unreleased[ \t]*\n(.*?)(?=^## |\Z)', re.M | re.S)
 
 
@@ -94,9 +95,9 @@ def check(event):
     # make it say why that is safe.
     # A bare directory name is a symlink or submodule standing in for that directory.
     if any(p.startswith(REVIEWED_DIRS) or p in REVIEWED_FILES or f'{p}/' in REVIEWED_DIRS
-           or Path(p).name in REVIEWED_NAMES for p in paths) \
+           or Path(p).name in REVIEWED_NAMES or set(Path(p).parts) & set(REVIEWED_PARTS) for p in paths) \
             and not SECURITY_REVIEW.search(pr.get('body') or ''):
-        raise ValueError(f'PR touching {", ".join(REVIEWED_DIRS + REVIEWED_FILES + REVIEWED_NAMES)} '
+        raise ValueError(f'PR touching {", ".join(REVIEWED_DIRS + REVIEWED_FILES + REVIEWED_NAMES + REVIEWED_PARTS)} '
                          'needs a "Security-Review: <summary>" line')
     notes = [(status, path) for status, path in changes if path.startswith('changes/') and path != NOTES_README]
     if version(base) != version(head):
