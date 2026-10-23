@@ -131,11 +131,12 @@ def pr_event(event, run_id):
     if event.get("action") != "edited" or changes.get("base"):
         return {"ok": True, "reuse": False, "reason": "new head, base or reopen"}
     head, title = pr["head"]["sha"], pr_run_title(pr)
+    repo = (pr["head"].get("repo") or {}).get("full_name")  # None once the head fork is deleted
     runs = gh_api(f"actions/workflows/{PR_WORKFLOW}/runs?event=pull_request&head_sha={head}"
                   "&per_page=100")["workflow_runs"]
     runs = [r for r in runs if r.get("head_sha") == head and r.get("id", run_id) < run_id
             and r.get("path") == f".github/workflows/{PR_WORKFLOW}"
-            and (r.get("head_repository") or {}).get("full_name") == pr["head"]["repo"]["full_name"]
+            and repo and (r.get("head_repository") or {}).get("full_name") == repo
             and str(r.get("display_title")).startswith(f"PR {pr['number']} into ")]
     last = max(runs, key=lambda item: item["id"], default={})
     reuse = (last.get("display_title") == title and last.get("status") == "completed"

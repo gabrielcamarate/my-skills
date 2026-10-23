@@ -85,6 +85,16 @@ class PrEventTest(unittest.TestCase):
                 result, _ = self.classify("edited-body", runs)
                 self.assertFalse(result["reuse"], result)
 
+    def test_deleted_head_fork_reruns_cheap_check(self):
+        original = workflow.gh_api
+        workflow.gh_api = lambda path: {"workflow_runs": [{**run(400), "head_repository": None}]}
+        try:
+            fork = event("edited-body")
+            fork["pull_request"]["head"]["repo"] = None
+            self.assertFalse(workflow.pr_event(fork, RUN_ID)["reuse"])
+        finally:
+            workflow.gh_api = original
+
     def test_api_failure_reruns_cheap_check_and_never_fails(self):
         with tempfile.TemporaryDirectory() as tmp:
             out = Path(tmp) / "out"
