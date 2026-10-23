@@ -140,9 +140,23 @@ class CheckPrScopeTest(unittest.TestCase):
                 ok = self.scope(files, body="Refs #12\nSecurity-Review: only narrows agent permissions\n")
                 self.assertEqual(ok.returncode, 0, ok.stderr)
 
+    def test_deploy_and_install_config_require_a_security_review_line(self):
+        # my-skills#25: wrangler build.command, .npmrc node-options, pnpm settings and patches/ run
+        # during install or deploy, next to the deploy token. Wrangler/npm config counts in any package.
+        for path in ("wrangler.jsonc", "wrangler.json", "wrangler.toml", "apps/web/wrangler.jsonc", ".npmrc",
+                     "packages/a/.npmrc", "pnpm-workspace.yaml", "patches/left-pad@1.3.0.patch", "patches"):
+            with self.subTest(path=path):
+                self.setUp()
+                files = {path: "x\n", "changes/12-a.md": "- A.\n"}
+                self.assertRefused(self.scope(files), "Security-Review:")
+                self.setUp()
+                ok = self.scope(files, body="Refs #12\nSecurity-Review: no new build command or install hook\n")
+                self.assertEqual(ok.returncode, 0, ok.stderr)
+
     def test_lockfile_and_nested_agent_docs_need_no_security_review_line(self):
         # The strict audit covers pnpm-lock.yaml; only the root AGENTS.md/CLAUDE.md count.
-        for path in ("pnpm-lock.yaml", "docs/AGENTS.md", "packages/a/CLAUDE.md", "binaries/x", "lib/bin/x"):
+        for path in ("pnpm-lock.yaml", "docs/AGENTS.md", "packages/a/CLAUDE.md", "binaries/x", "lib/bin/x",
+                     "docs/wrangler.md", "lib/patches/x.ts", "packages/a/pnpm-workspace.yaml.md"):
             with self.subTest(path=path):
                 self.setUp()
                 result = self.scope({path: "x\n", "changes/12-a.md": "- A.\n"})
