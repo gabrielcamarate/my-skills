@@ -36,7 +36,8 @@ else:
 """
 
 FAKE_PNPM = r"""#!/bin/sh
-echo "$PWD pnpm $*" >> "$PNPM_LOG"
+[ "$1" = --version ] && echo "$PNPM_VERSION" && exit 0
+echo "$PWD pnpm $* node=$(node --version)" >> "$PNPM_LOG"
 case "$1" in
   test)
     for arg; do case "$arg" in --outputFile.json=*) report=${arg#--outputFile.json=} ;; esac; done
@@ -54,6 +55,9 @@ class TemplateScriptTests(unittest.TestCase):
     def test_ensure_node(self):
         self.run_script("test-ensure-node.sh")
 
+    def test_cloud_setup(self):
+        self.run_script("test-cloud-setup.sh")
+
     def test_share_machine(self):
         self.run_script("test-share-machine.sh")
 
@@ -69,7 +73,8 @@ class FastCheckTests(unittest.TestCase):
     def setUp(self):
         self.tmp = Path(tempfile.mkdtemp())
         self.addCleanup(shutil.rmtree, self.tmp)
-        pinned = re.search(r"(?m)^NODE_VERSION=(\S+)$", (SCRIPTS / "ensure-node.sh").read_text()).group(1)
+        self.pinned = pinned = re.search(r"(?m)^NODE_VERSION=(\S+)$", (SCRIPTS / "ensure-node.sh").read_text()).group(1)
+        self.pnpm = re.search(r"(?m)^PNPM_VERSION=(\S+)$", (SCRIPTS / "ensure-pnpm.sh").read_text()).group(1)
         stubs = self.tmp / "stubs"
         stubs.mkdir()
         for name, body in (("node", f'#!/bin/sh\necho v{pinned}\n'), ("pnpm", FAKE_PNPM)):
@@ -79,7 +84,7 @@ class FastCheckTests(unittest.TestCase):
         self.env = {
             "HOME": str(self.tmp / "home"), "PATH": f"{stubs}:/usr/bin:/bin",
             "NODE_PREFIX": str(self.tmp / "prefix"), "HEAVY_LOCK": str(self.tmp / "heavy.lock"),
-            "PNPM_LOG": str(self.log), "BUSY": str(self.tmp / "busy"),
+            "PNPM_LOG": str(self.log), "BUSY": str(self.tmp / "busy"), "PNPM_VERSION": self.pnpm,
         }
 
     def project(self, name):
@@ -116,6 +121,29 @@ class FastCheckTests(unittest.TestCase):
         tests = [line for line in self.log.read_text().splitlines() if " pnpm test " in line]
         self.assertEqual(len(tests), 2)
         self.assertTrue(all("--maxWorkers=2" in line for line in tests), tests)
+
+    def test_pinned_node_and_pnpm_win_over_shared_bin(self):
+        """Another project's node and pnpm in ~/.local/bin, first on PATH (#12)."""
+        home = self.tmp / "home"
+        shared = home / ".local/bin"
+        shared.mkdir(parents=True)
+        (shared / "node").write_text("#!/bin/sh\necho v22.22.0\n")
+        (shared / "pnpm").write_text("#!/bin/sh\n[ \"$1\" = --version ] && echo 9.0.0 && exit 0\nexit 1\n")
+        node_bin = home / f".local/lib/pinned-node/node-v{self.pinned}-linux-x64/bin"
+        pnpm_bin = home / f".local/lib/pinned-pnpm/{self.pnpm}/bin"
+        for path, body in ((shared / "node", None), (shared / "pnpm", None),
+                           (node_bin / "node", f"#!/bin/sh\necho v{self.pinned}\n"), (pnpm_bin / "pnpm", FAKE_PNPM)):
+            if body:
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text(body)
+            path.chmod(0o755)
+        before = {p.name: p.read_bytes() for p in shared.iterdir()}
+        del self.env["NODE_PREFIX"]  # the default prefix, ~/.local
+        out = self.finish(self.start(self.project("a"), PATH=f"{shared}:/usr/bin:/bin", NODE_DIST_PLATFORM="linux-x64"))
+        self.assertIn("PASS  fast core", out)
+        calls = self.log.read_text().splitlines()
+        self.assertTrue(calls and all(line.endswith(f"node=v{self.pinned}") for line in calls), calls)
+        self.assertEqual({p.name: p.read_bytes() for p in shared.iterdir()}, before)
 
     def test_ci_uses_every_core(self):
         self.finish(self.start(self.project("a"), CI="true"))
@@ -176,6 +204,11 @@ class SettingsTemplateTests(unittest.TestCase):
     """A broad `ask` silently overrides the task-branch push allows."""
 
     rules = json.loads((TEMPLATES / "claude/settings.json").read_text())["permissions"]
+
+    def test_no_claude_attribution(self):
+        settings = json.loads((TEMPLATES / "claude/settings.json").read_text())
+        self.assertEqual(settings["attribution"]["commit"], "")
+        self.assertEqual(settings["attribution"]["pr"], "")
 
     def test_no_broad_push_ask(self):
         self.assertNotIn("Bash(git push:*)", self.rules["ask"])

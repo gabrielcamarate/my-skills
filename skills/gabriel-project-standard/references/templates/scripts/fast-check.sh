@@ -6,10 +6,11 @@ set -Eeuo pipefail
 
 ROOT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
 cd "$ROOT_DIR"
-# This process uses the project's pinned Node; the shared ~/.local/bin stays untouched.
-PATH="$("$ROOT_DIR/scripts/ensure-node.sh" --bin):$PATH"
+# This process uses the project's pinned Node and pnpm; the shared ~/.local/bin stays untouched.
+PATH="$("$ROOT_DIR/scripts/ensure-node.sh" --bin):$("$ROOT_DIR/scripts/ensure-pnpm.sh" --bin):$PATH"
 export PATH
 "$ROOT_DIR/scripts/ensure-node.sh" --check
+"$ROOT_DIR/scripts/ensure-pnpm.sh" --check
 
 # Same public dummies as the PR workflow, forced so real credentials in the shell
 # or in .env.local are never used.
