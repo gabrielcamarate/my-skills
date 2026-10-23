@@ -18,7 +18,8 @@ import subprocess
 import sys
 from urllib.parse import urlencode
 
-# --- Configuração do projeto: nome do workflow (ou arquivo .yml), evento e branch.
+# --- Configuração do projeto: nome do workflow (ou arquivo .yml), evento e branch (None = qualquer).
+# main_ci é o workflow do push na main; deploy, o que publica em produção. Ajuste aos nomes do projeto.
 REPOSITORY = "__OWNER__/__REPO__"
 STAGES = {
     "heavy": {"workflow": "Staging Heavy Quality", "event": "push", "branch": "staging"},
@@ -62,24 +63,44 @@ def matches(run, stage):
                for key, field in (("event", "event"), ("branch", "head_branch")))
 
 
+def list_runs(**query):
+    """Every page of actions/runs: other workflows on the same SHA can push a stage off page 1."""
+    runs, page = [], 1
+    while True:
+        batch = gh_api("actions/runs?" + urlencode({**query, "per_page": 100, "page": page}))["workflow_runs"]
+        runs += batch
+        if len(batch) < 100:
+            return runs
+        page += 1
+
+
 def runs_for_sha(sha):
-    if not sha:
-        return []
-    return gh_api("actions/runs?" + urlencode({"head_sha": sha, "per_page": 100}))["workflow_runs"]
+    return list_runs(head_sha=sha) if sha else []
 
 
-def pick(runs, before=None):
-    """Latest finished, non-cancelled run (optionally finished by `before`)."""
-    timed = [r for r in runs if r.get("status") == "completed" and r.get("conclusion") != "cancelled"
-             and (before is None or when(r["updated_at"]) <= before)]
-    if timed:
-        return max(timed, key=lambda r: when(r["updated_at"]))
+def pick(runs, gate=None):
+    """The run that measures the stage; cancelled runs are never timed.
+
+    Without `gate`: the first successful run (a later redeploy or re-run does not stretch the
+    delivery), else the first finished one. With `gate` (merge time): the last run finished by
+    then, else the first finished one.
+    """
+    finished = sorted((r for r in runs if r.get("status") == "completed" and r.get("conclusion") != "cancelled"),
+                      key=lambda r: when(r["updated_at"]))
+    gated = [r for r in finished if gate and when(r["updated_at"]) <= gate]
+    green = [r for r in finished if r.get("conclusion") == "success"]
+    if gated:
+        return gated[-1]
+    if green and not gate:
+        return green[0]
+    if finished:
+        return finished[0]
     pending = [r for r in runs if r.get("status") != "completed"]
     return max(pending, key=lambda r: when(r["created_at"])) if pending else None
 
 
-def stage_row(label, runs, before=None):
-    run = pick(runs, before)
+def stage_row(label, runs, gate=None):
+    run = pick(runs, gate)
     cancelled = sum(r.get("conclusion") == "cancelled" for r in runs)
     count = f"{len(runs)} ({cancelled} cancelado{'s' if cancelled != 1 else ''})" if cancelled else str(len(runs))
     if not run:
@@ -89,8 +110,11 @@ def stage_row(label, runs, before=None):
     attempt = run.get("run_attempt") or 1
     if attempt > 1:
         result += f", tentativa {attempt}"
-    return {"label": label, "start": when(run["created_at"]), "end": when(run["updated_at"]) if done else None,
-            "result": result, "runs": count, "ok": done and run.get("conclusion") == "success"}
+    # A re-run keeps the first attempt's created_at; time only the last attempt.
+    start = when(run.get("run_started_at") if attempt > 1 else run["created_at"])
+    return {"label": label, "start": start, "end": when(run["updated_at"]) if done else None,
+            "result": result, "runs": count, "ok": done and run.get("conclusion") == "success",
+            "created": when(run["created_at"])}
 
 
 def table(rows):
@@ -117,9 +141,10 @@ def promotion(number):
     lines = [f"## Tempo de entrega: promoção #{number}", "",
              f"SHA promovido `{head[:12]}`; merge `{merge_sha[:12] if merge_sha else MISSING}`.", "",
              *table([heavy, check, merge, main_ci, deploy]), "",
-             f"- **(a) push na staging → deploy de produção:** {span(heavy['start'], shipped)}",
+             f"- **(a) push na staging → deploy de produção:** {span(heavy.get('created'), shipped)}",
              f"- **(b) merge da promoção → deploy de produção:** {span(merged, shipped)}", "",
-             "Início = criação do run (inclui fila); push na staging = criação da pesada no SHA promovido. "
+             "Início = criação do run (inclui fila) ou, numa nova tentativa, o início dela; "
+             "push na staging = criação da pesada no SHA promovido. "
              "Runs cancelados contam em Runs e ficam fora da duração; a espera pelo OK de Gabriel fica fora de (b)."]
     return "\n".join(lines)
 
@@ -127,8 +152,8 @@ def promotion(number):
 def task(number):
     pr = gh_api(f"pulls/{number}")
     opened, merged = when(pr["created_at"]), when(pr.get("merged_at"))
-    runs = gh_api("actions/runs?" + urlencode({"branch": pr["head"]["ref"], "event": "pull_request",
-                                               "per_page": 100}))["workflow_runs"]
+    event = STAGES["check"]["event"]
+    runs = list_runs(branch=pr["head"]["ref"], **({"event": event} if event else {}))
     runs = [r for r in runs if matches(r, "check") and when(r["created_at"]) >= opened
             and (merged is None or when(r["created_at"]) <= merged)]
     check = stage_row("Check do PR", runs, merged)

@@ -1,5 +1,5 @@
 {
- "repository": "camaratetech/my-finances",
+ "repository": "example/my-finances",
  "stages": {
   "heavy": {
    "workflow": "Staging Heavy Quality",
@@ -27,24 +27,24 @@
    "number": 199,
    "created_at": "2026-10-22T03:05:54Z",
    "merged_at": "2026-10-22T03:38:51Z",
-   "merge_commit_sha": "1b9e170f1588b9da70cd3e9bc5cdd79b7545b21c",
+   "merge_commit_sha": "802625c9fffd9372f7eedaa356394bc4c246d224",
    "head": {
-    "sha": "e694350a3581112933cf323919776c0e28c3255f",
+    "sha": "5eb851e1b63f16a3da2e4447836584920a8b5f72",
     "ref": "staging"
    },
    "base": {
     "ref": "main"
    }
   },
-  "actions/runs?head_sha=e694350a3581112933cf323919776c0e28c3255f&per_page=100": {
+  "actions/runs?head_sha=5eb851e1b63f16a3da2e4447836584920a8b5f72&per_page=100&page=1": {
    "workflow_runs": [
     {
-     "id": 39715851165,
+     "id": 1001,
      "name": "Pull Request Quality",
      "path": ".github/workflows/pr.yml",
      "event": "pull_request",
      "head_branch": "staging",
-     "head_sha": "e694350a3581112933cf323919776c0e28c3255f",
+     "head_sha": "5eb851e1b63f16a3da2e4447836584920a8b5f72",
      "status": "completed",
      "conclusion": "success",
      "created_at": "2026-10-22T03:15:35Z",
@@ -53,12 +53,12 @@
      "run_attempt": 2
     },
     {
-     "id": 39715846680,
+     "id": 1002,
      "name": "Staging Heavy Quality",
      "path": ".github/workflows/staging-quality.yml",
      "event": "push",
      "head_branch": "staging",
-     "head_sha": "e694350a3581112933cf323919776c0e28c3255f",
+     "head_sha": "5eb851e1b63f16a3da2e4447836584920a8b5f72",
      "status": "completed",
      "conclusion": "success",
      "created_at": "2026-10-22T03:15:32Z",
@@ -68,15 +68,15 @@
     }
    ]
   },
-  "actions/runs?head_sha=1b9e170f1588b9da70cd3e9bc5cdd79b7545b21c&per_page=100": {
+  "actions/runs?head_sha=802625c9fffd9372f7eedaa356394bc4c246d224&per_page=100&page=1": {
    "workflow_runs": [
     {
-     "id": 39718751968,
+     "id": 1003,
      "name": "Release",
      "path": ".github/workflows/release.yml",
      "event": "workflow_run",
      "head_branch": "main",
-     "head_sha": "1b9e170f1588b9da70cd3e9bc5cdd79b7545b21c",
+     "head_sha": "802625c9fffd9372f7eedaa356394bc4c246d224",
      "status": "completed",
      "conclusion": "success",
      "created_at": "2026-10-22T03:47:13Z",
@@ -85,12 +85,12 @@
      "run_attempt": 1
     },
     {
-     "id": 39718752029,
+     "id": 1004,
      "name": "Deploy",
      "path": ".github/workflows/deploy.yml",
      "event": "workflow_run",
      "head_branch": "main",
-     "head_sha": "1b9e170f1588b9da70cd3e9bc5cdd79b7545b21c",
+     "head_sha": "802625c9fffd9372f7eedaa356394bc4c246d224",
      "status": "completed",
      "conclusion": "success",
      "created_at": "2026-10-22T03:47:13Z",
@@ -99,12 +99,12 @@
      "run_attempt": 1
     },
     {
-     "id": 39718005787,
-     "name": "npm_and_yarn in /. for @vitest/mocker - Update #1644227496",
+     "id": 1005,
+     "name": "Dependabot update",
      "path": "dynamic/dependabot/dependabot-updates",
      "event": "dynamic",
      "head_branch": "main",
-     "head_sha": "1b9e170f1588b9da70cd3e9bc5cdd79b7545b21c",
+     "head_sha": "802625c9fffd9372f7eedaa356394bc4c246d224",
      "status": "completed",
      "conclusion": "failure",
      "created_at": "2026-10-22T03:39:07Z",
@@ -113,12 +113,12 @@
      "run_attempt": 1
     },
     {
-     "id": 39717987656,
+     "id": 1006,
      "name": "CI",
      "path": ".github/workflows/ci.yml",
      "event": "push",
      "head_branch": "main",
-     "head_sha": "1b9e170f1588b9da70cd3e9bc5cdd79b7545b21c",
+     "head_sha": "802625c9fffd9372f7eedaa356394bc4c246d224",
      "status": "completed",
      "conclusion": "success",
      "created_at": "2026-10-22T03:38:55Z",

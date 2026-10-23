@@ -1,5 +1,5 @@
 {
- "repository": "xlondz/xlondz",
+ "repository": "example/xlondz",
  "stages": {
   "heavy": {
    "workflow": "CI",
@@ -27,24 +27,24 @@
    "number": 651,
    "created_at": "2026-10-22T23:30:21Z",
    "merged_at": "2026-10-23T01:04:36Z",
-   "merge_commit_sha": "cc5cdfbf9b342d19d9d1da6fbf4c1ec41bd94bb8",
+   "merge_commit_sha": "0937620ffe22598b4f862e9091fadb936caf6f76",
    "head": {
-    "sha": "5e5c265f2482cd73ef029827792e35e21e972563",
-    "ref": "fix/647-opennext-next16-4"
+    "sha": "1777c248acd66ee2b01ae5c6a37eaf36f5e0dc12",
+    "ref": "fix/651-task"
    },
    "base": {
     "ref": "staging"
    }
   },
-  "actions/runs?branch=fix%2F647-opennext-next16-4&event=pull_request&per_page=100": {
+  "actions/runs?branch=fix%2F651-task&event=pull_request&per_page=100&page=1": {
    "workflow_runs": [
     {
-     "id": 39872396211,
+     "id": 1001,
      "name": "CI",
      "path": ".github/workflows/ci.yml",
      "event": "pull_request",
-     "head_branch": "fix/647-opennext-next16-4",
-     "head_sha": "5e5c265f2482cd73ef029827792e35e21e972563",
+     "head_branch": "fix/651-task",
+     "head_sha": "1777c248acd66ee2b01ae5c6a37eaf36f5e0dc12",
      "status": "completed",
      "conclusion": "success",
      "created_at": "2026-10-22T23:31:53Z",
@@ -53,12 +53,12 @@
      "run_attempt": 1
     },
     {
-     "id": 39872230674,
+     "id": 1002,
      "name": "CI",
      "path": ".github/workflows/ci.yml",
      "event": "pull_request",
-     "head_branch": "fix/647-opennext-next16-4",
-     "head_sha": "5e5c265f2482cd73ef029827792e35e21e972563",
+     "head_branch": "fix/651-task",
+     "head_sha": "1777c248acd66ee2b01ae5c6a37eaf36f5e0dc12",
      "status": "completed",
      "conclusion": "cancelled",
      "created_at": "2026-10-22T23:30:25Z",
