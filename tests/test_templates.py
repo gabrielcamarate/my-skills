@@ -6,6 +6,7 @@ import subprocess
 import sys
 import tempfile
 import textwrap
+import time
 import unittest
 from pathlib import Path
 
@@ -43,7 +44,13 @@ case "$1" in
   test)
     for arg; do case "$arg" in --outputFile.json=*) report=${arg#--outputFile.json=} ;; esac; done
     printf '{"testResults":[{"name":"%s/lib/a.test.ts","assertionResults":[{"ancestorTitles":["media"],"title":"manifest","duration":1234}]}]}' "$PWD" > "$report" ;;
-  build) mkdir "$BUSY" || exit 9; sleep 1; rmdir "$BUSY" ;;
+  build)
+    # Holds the heavy lock until the other session has queued for it, so the
+    # wait is certain however the machine schedules the two sessions (#20); it
+    # gives up once the test has removed its logs.
+    mkdir "$BUSY" || exit 9
+    [ -z "$QUEUE_LOGS" ] || until grep -qs 'wait  another session holds' $QUEUE_LOGS || [ ! -e "${QUEUE_LOGS%% *}" ]; do sleep 0.05; done
+    rmdir "$BUSY" ;;
 esac
 """
 
@@ -86,6 +93,7 @@ class FastCheckTests(unittest.TestCase):
             "HOME": str(self.tmp / "home"), "PATH": f"{stubs}:/usr/bin:/bin",
             "NODE_PREFIX": str(self.tmp / "prefix"), "HEAVY_LOCK": str(self.tmp / "heavy.lock"),
             "PNPM_LOG": str(self.log), "BUSY": str(self.tmp / "busy"), "PNPM_VERSION": self.pnpm,
+            "QUEUE_LOGS": "",
         }
 
     def project(self, name):
@@ -102,18 +110,32 @@ class FastCheckTests(unittest.TestCase):
         (root / ".codex/environments/environment.toml").write_text('[setup]\nscript = "bash .codex/scripts/setup.sh"\n')
         return root
 
-    def start(self, root, **extra):
-        return subprocess.Popen(["bash", str(root / "scripts/fast-check.sh")], env={**self.env, **extra},
-                                stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+    def start(self, root, log=None, **extra):
+        out = open(log, "w") if log else subprocess.PIPE
+        proc = subprocess.Popen(["bash", str(root / "scripts/fast-check.sh")], env={**self.env, **extra},
+                                stdout=out, stderr=subprocess.STDOUT, text=True)
+        if log:
+            out.close()
+        proc.log = log
+        return proc
 
     def finish(self, proc):
-        out, _ = proc.communicate(timeout=120)
+        try:
+            out, _ = proc.communicate(timeout=120)
+        except subprocess.TimeoutExpired:
+            proc.kill()
+            proc.communicate()
+            raise
+        if proc.log:
+            out = Path(proc.log).read_text()
         self.assertEqual(proc.returncode, 0, out)
         return out
 
     def test_two_projects_in_parallel(self):
         a, b = self.project("a"), self.project("b")
-        outputs = [self.finish(p) for p in (self.start(a), self.start(b))]
+        logs = [self.tmp / "a.log", self.tmp / "b.log"]
+        self.env["QUEUE_LOGS"] = " ".join(map(str, logs))
+        outputs = [self.finish(p) for p in (self.start(a, logs[0]), self.start(b, logs[1]))]
         self.assertTrue(any("wait  another session holds" in out for out in outputs), outputs)
         for out in outputs:
             self.assertIn("PASS  fast core", out)
@@ -122,6 +144,21 @@ class FastCheckTests(unittest.TestCase):
         tests = [line for line in self.log.read_text().splitlines() if " pnpm test " in line]
         self.assertEqual(len(tests), 2)
         self.assertTrue(all("--maxWorkers=2" in line for line in tests), tests)
+
+    def test_second_session_arriving_late_still_queues(self):
+        """#20: the second session reaches the build only after the first is inside it."""
+        a, b = self.project("a"), self.project("b")
+        logs = [self.tmp / "a.log", self.tmp / "b.log"]
+        self.env["QUEUE_LOGS"] = " ".join(map(str, logs))
+        first = self.start(a, logs[0])
+        busy = self.tmp / "busy"
+        while not busy.exists():
+            self.assertIsNone(first.poll(), logs[0].read_text())
+            time.sleep(0.05)
+        outputs = [self.finish(p) for p in (self.start(b, logs[1]), first)]
+        self.assertIn("wait  another session holds", outputs[0])
+        for out in outputs:
+            self.assertIn("PASS  fast core", out)
 
     def test_pinned_node_and_pnpm_win_over_shared_bin(self):
         """Another project's node and pnpm in ~/.local/bin, first on PATH (#12)."""
