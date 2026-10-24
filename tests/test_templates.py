@@ -298,7 +298,8 @@ class AgentWordingTests(unittest.TestCase):
                 self.assertIn(phrase, self.agents)
 
     def test_old_wording_is_gone(self):
-        for phrase in ("nunca o alheio, `prune`", "cobrança ou permissões"):
+        self.assertIn("Limpeza:", self.kit)
+        for phrase in ("nunca o alheio, `prune`", "Docker, `prune`", "cobrança ou permissões"):
             with self.subTest(phrase=phrase):
                 self.assertNotIn(phrase, self.kit)
 
