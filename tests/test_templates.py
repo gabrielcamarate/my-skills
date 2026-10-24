@@ -284,6 +284,26 @@ class SettingsTemplateTests(unittest.TestCase):
                 self.assertEqual(permission(self.rules, command), "deny")
 
 
+class AgentWordingTests(unittest.TestCase):
+    """my-skills#37: cleanup names local branches and `docker ... prune`; the remote is GitHub's to delete."""
+
+    agents = (TEMPLATES.parent / "AGENTS.template.md").read_text()
+    kit = "\n".join(p.read_text() for p in TEMPLATES.parents[2].glob("gabriel-*/**/*.md"))
+
+    def test_cleanup_uses_new_wording(self):
+        for phrase in ("worktrees, branches locais; a remota o GitHub apaga no merge",
+                       "nunca o alheio, `docker ... prune`, filtro amplo ou `--force`",
+                       "O que a próxima sessão da issue usa fica, dito na issue."):
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, self.agents)
+
+    def test_old_wording_is_gone(self):
+        self.assertIn("Limpeza:", self.kit)
+        for phrase in ("nunca o alheio, `prune`", "Docker, `prune`", "cobrança ou permissões"):
+            with self.subTest(phrase=phrase):
+                self.assertNotIn(phrase, self.kit)
+
+
 class PromotionTemplateTests(unittest.TestCase):
     """Promotion reuses the heavy staging evidence instead of rerunning the suite."""
 
